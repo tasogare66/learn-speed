@@ -1,12 +1,17 @@
-'user strict';
+'use strict';
 
 import express from 'express';
 import http from 'http';
 import socketio from 'socket.io';
+import { Game } from '../libs/Game';
 
 const app = express();
 const server = http.createServer(app);
 const io = new socketio.Server(server);
+
+//ゲーム作成
+const game = new Game();
+game.start(io);
 
 //公開フォルダ
 app.use(express.static(/*__dirname +*/'public'));
