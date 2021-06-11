@@ -4,6 +4,8 @@
   "description": "## Running the sample - npm install - node server.js",
   "main": "server.js",
   "scripts": {
+    "dev": "webpack --mode development --watch",
+    "build": "webpack --mode production",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -17,6 +19,11 @@
     "@types/node": "^14.17.2",
     "@types/socket.io": "^3.0.2",
     "@types/socket.io-client": "^3.0.0",
-    "typescript": "^4.3.2"
+    "html-webpack-plugin": "^5.3.1",
+    "ts-loader": "^9.2.3",
+    "typescript": "^4.3.2",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2",
+    "webpack-node-externals": "^3.0.0"
   }
 }

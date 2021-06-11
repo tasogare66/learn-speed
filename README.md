@@ -20,3 +20,7 @@ entry point server.js
 
 - compile:npx tsc
 - run:node dist/server.js
+
+- webpack
+- npm install --save-dev webpack webpack-cli ts-loader html-webpack-plugin webpack-node-externals
+npm run dev でwebpack
