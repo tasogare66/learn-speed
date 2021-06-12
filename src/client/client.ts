@@ -1,11 +1,11 @@
 'use strict';
 
-import io from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { Screen } from './Screen';
 
-const socket = io();
+const socket: Socket = io();
 
-const screen = new Screen();
+const screen = new Screen(socket);
 
 // キャンバスの描画開始
 screen.animate(0);
