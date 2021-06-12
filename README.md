@@ -24,3 +24,10 @@ entry point server.js
 - webpack
 - npm install --save-dev webpack webpack-cli ts-loader html-webpack-plugin webpack-node-externals
 npm run dev でwebpack
+
+- nodemon
+- npm install --save-dev nodemon nodemon-webpack-plugin
+npm run dev でサーバーも起動
+
+## ref
+http://www.cc.kochi-u.ac.jp/~tyamag/jyohou/javascriptcardgame.pdf
