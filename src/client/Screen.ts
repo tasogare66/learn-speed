@@ -1,12 +1,15 @@
 import { io, Socket } from 'socket.io-client';
 import { SharedSettings } from './SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
+import { Assets } from './Assets';
 
 export class Screen{
   constructor(socket: Socket, canvas: HTMLCanvasElement) {
     this.socket = socket;
     this.canvas = canvas;
     this.context = canvas.getContext('2d')!; //non-null
+
+    this.assets = new Assets();
 
     //キャンバスの初期化
     this.canvas.width = SharedSettings.FIELD_WIDTH;
@@ -21,6 +24,7 @@ export class Screen{
   socket: Socket;
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
+  assets: Assets;
   iProcessingTimeNanoSec = 0;
 
   //socketの初期化
@@ -65,9 +69,13 @@ export class Screen{
     this.renderField();
 
     //枠の描画
+    this.context.save();
     {
-
+      this.context.strokeStyle = RenderingSettings.FIELD_LINECOLOR;
+      this.context.lineWidth = RenderingSettings.FIELD_LINEWIDTH;
+      this.context.strokeRect(0, 0, this.canvas.width, this.canvas.height);
     }
+    this.context.restore();
 
     //server処理時間表示
     this.context.save();
@@ -82,5 +90,22 @@ export class Screen{
 
   renderField()
   {
+    this.context.save();
+    {
+      const iCountX = Math.floor(SharedSettings.FIELD_WIDTH / RenderingSettings.FIELDTILE_WIDTH);
+      const iCountY = Math.floor(SharedSettings.FIELD_HEIGHT / RenderingSettings.FIELDTILE_HEIGHT);
+      for (let iIndexY = 0; iIndexY < iCountY; iIndexY++) {
+        for (let iIndexX = 0; iIndexX < iCountX; iIndexX++) {
+          this.context.drawImage(this.assets.imageField,
+            this.assets.rectFieldInFieldImage.sx, this.assets.rectFieldInFieldImage.sy,	// 描画元画像の右上座標
+            this.assets.rectFieldInFieldImage.sw, this.assets.rectFieldInFieldImage.sh,	// 描画元画像の大きさ
+            iIndexX * RenderingSettings.FIELDTILE_WIDTH,// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+            iIndexY * RenderingSettings.FIELDTILE_HEIGHT,// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+            RenderingSettings.FIELDTILE_WIDTH,	// 描画先領域の大きさ
+            RenderingSettings.FIELDTILE_HEIGHT);	// 描画先領域の大きさ
+        }
+      }
+    }
+    this.context.restore();
   }
 }
