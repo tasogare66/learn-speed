@@ -54,4 +54,12 @@ export class Room {
       this.matchSpeed.deleteRequest();
     }
   }
+
+  toJSON() {
+    return Object.assign(
+      {
+        match: this.matchSpeed
+      }
+    );
+  }
 }

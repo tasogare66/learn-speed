@@ -48,7 +48,7 @@ export class Game{
       const iNanosecDiff = hrtimeDiff[0] * 1e9 + hrtimeDiff[1];
       //clientに送信
       io.emit('update',
-        room.playersLst,
+        room,
         iNanosecDiff
       );
     }, 1000 / GameSettings.FRAMERATE); //1000(ms)/FRAMERATE(30)
