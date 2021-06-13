@@ -25,6 +25,7 @@ export class Screen{
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
   assets: Assets;
+  players: any[] = [];
   iProcessingTimeNanoSec = 0;
 
   //socketの初期化
@@ -45,7 +46,8 @@ export class Screen{
     // ・サーバー側の周期的処理の「io.sockets.emit( 'update', ・・・ );」に対する処理
     this.socket.on(
       'update',
-      (iProcessingTimeNanoSec) => {
+      (players, iProcessingTimeNanoSec) => {
+        this.players = players;
         this.iProcessingTimeNanoSec = iProcessingTimeNanoSec;
       });
   }
@@ -67,6 +69,10 @@ export class Screen{
 
     //bg
     this.renderField();
+
+    if (this.players) {
+      //FIXME:  
+    }
 
     //枠の描画
     this.context.save();
