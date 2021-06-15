@@ -1,7 +1,8 @@
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import { SharedSettings } from './SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
-import { Assets } from './Assets';
+import { ImgRect, Assets } from './Assets';
+import { RoomSerialized } from '../cmn/SerializeData';
 
 export class Screen{
   constructor(socket: Socket, canvas: HTMLCanvasElement) {
@@ -25,7 +26,7 @@ export class Screen{
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
   assets: Assets;
-  room: any;
+  room: RoomSerialized = new RoomSerialized();
   iProcessingTimeNanoSec = 0;
 
   //socketの初期化
@@ -47,7 +48,7 @@ export class Screen{
     this.socket.on(
       'update',
       (room, iProcessingTimeNanoSec) => {
-        this.room = room;
+        this.room = Object.assign(new RoomSerialized(), room);
         this.iProcessingTimeNanoSec = iProcessingTimeNanoSec;
       });
   }
@@ -71,7 +72,7 @@ export class Screen{
     this.renderField();
 
     if (this.room) {
-      //FIXME:  
+      this.renderRoom();
     }
 
     //枠の描画
@@ -111,6 +112,39 @@ export class Screen{
             RenderingSettings.FIELDTILE_HEIGHT);	// 描画先領域の大きさ
         }
       }
+    }
+    this.context.restore();
+  }
+
+  renderRoom()
+  {
+    this.renderMatchSpeed();
+  }
+
+  renderMatchSpeed()
+  {
+    const match = this.room.match;
+    if (!match) {
+      return;
+    }
+
+    this.renderCard();
+  }
+
+  renderCard()
+  {
+    this.context.save();
+    {
+//<SubTexture height="190" width="140" y="1140" x="280" name="cardClubs2.png"/>
+      const rect: ImgRect = { sx: 280, sy: 1140, sw: 140, sh: 190 };
+      // this.context.translate(tank.fX, tank.fY);
+      this.context.drawImage(this.assets.imgCards,
+        rect.sx, rect.sy,	// 描画元画像の右上座標
+        rect.sw, rect.sh,	// 描画元画像の大きさ
+        30,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        40,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        rect.sw,	// 描画先領域の大きさ
+        rect.sh);	// 描画先領域の大きさ
     }
     this.context.restore();
   }

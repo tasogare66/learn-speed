@@ -1,52 +1,6 @@
 import { assert } from 'console';
 import { Player } from '../libs/Player';
-
-const Suit = {
-  None: 'none',
-  Spade: 'spade',
-  Club: 'club',
-  Diamond: 'diamond',
-  Heart: 'heart'
-} as const;
-type Suit = typeof Suit[keyof typeof Suit];
-
-enum CardNo {
-  Start=0,
-  Ace=Start,
-  Deuce,
-  Three,
-  Four,
-  Five,
-  Six,
-  Seven,
-  Eight,
-  Nine,
-  Ten,
-  Jack,
-  Queen,
-  King,
-  Max
-}
-
-class Card {
-  constructor(suit: Suit = Suit.None, no: CardNo = CardNo.Max) {
-    this.suit = suit;
-    this.no = no;
-  }
-  suit: Suit;
-  no: CardNo;
-  isInvalid(): boolean {
-    return (this.suit===Suit.None);
-  }
-  toJSON() {
-    return Object.assign(
-      {
-        suit: this.suit,
-        no: this.no
-      }
-    );
-  }
-}
+import { Suit, CardNo, Card } from '../cmn/SerializeData';
 
 class MatchSpeedPlayer {
   constructor(player: Player) {

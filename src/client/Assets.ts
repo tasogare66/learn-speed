@@ -11,8 +11,15 @@ export class Assets {
     this.imageField = new Image();
     this.imageField.src = '../images/grass01.png'
     this.rectFieldInFieldImage = { sx: 0, sy: 0, sw: 512, sh: 512 };
+    //cards
+    this.imgCards = new Image();
+    this.imgCards.src = '../images/playingCards.png';
+    this.imgCardBack = new Image();
+    this.imgCardBack.src = '../images/playingCardBacks.png';
   }
 
   imageField: HTMLImageElement;
   rectFieldInFieldImage: ImgRect;
+  imgCards: HTMLImageElement;
+  imgCardBack: HTMLImageElement;
 }
