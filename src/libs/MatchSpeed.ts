@@ -14,6 +14,16 @@ class MatchSpeedPlayer {
   hand: Card[] = []; //手札
   static readonly HAND_CARD_NUM = 4;
 
+  //カードの補充できる場合,true
+  canDecToHand(): boolean {
+    for (let i = 0; i < this.hand.length; ++i) {
+      if (this.hand[i].isInvalid() && this.deck.length) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   deckToHand() {
     for (let i = 0; i < this.hand.length; ++i) {
       if (this.hand[i].isInvalid() && this.deck.length) {
@@ -37,6 +47,18 @@ class MatchSpeedPlayer {
     return new Card();
   }
 
+  canUseCard() : boolean {
+    //FIXME:  
+    return false;
+  }
+
+  //何かカード出せる場合,true
+  canUseAnyCard(): boolean {
+    if (this.canDecToHand()) return true; //補充できる場合,true
+    //FIXME:  
+    return false;
+  }
+
   toJSON() {
     return Object.assign(
       {
@@ -58,6 +80,7 @@ export class MatchSpeed {
   needDel: boolean = false;
   players: MatchSpeedPlayer[] = [];
   layout: Card[] = new Array(2); //場札
+  static readonly PLAYER_NUM = 2;
 
   initMatch() {
     function addSuitAll(p:MatchSpeedPlayer, suit:Suit){
@@ -76,11 +99,31 @@ export class MatchSpeed {
       //set hand
       mp.deckToHand();
     });
+    assert(this.layout.length == MatchSpeed.PLAYER_NUM);
+    assert(this.players.length == MatchSpeed.PLAYER_NUM);
+  }
+
+  //カード出せる?
+  canPlayACardAnyPlayer() : boolean {
+    for (let i=0;i<this.layout.length;++i) {
+      if(!this.layout[i]) return false; //カード出ていない場合出せない
+    }
+    return true;
+  }
+
+  //場札に出す
+  putLayout() {
+    for (let i = 0; i < MatchSpeed.PLAYER_NUM; ++i) {
+      this.layout[i] = this.players[i].popCard();
+    }
   }
 
   update(fDeltaTime: number) {
     if (!this.delReq) {
-
+      if (!this.canPlayACardAnyPlayer()) {
+        //出せるカードないので場札更新
+        this.putLayout();
+      }
     } else {
       this.needDel = true;
     }

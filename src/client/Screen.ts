@@ -2,7 +2,8 @@ import { Socket } from 'socket.io-client';
 import { SharedSettings } from './SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { ImgRect, Assets } from './Assets';
-import { RoomSerialized } from '../cmn/SerializeData';
+import { Card, RoomSerialized, MatchSpeedPlayerSerialized } from '../cmn/SerializeData';
+import { Util } from '../cmn/Util';
 
 export class Screen{
   constructor(socket: Socket, canvas: HTMLCanvasElement) {
@@ -128,21 +129,83 @@ export class Screen{
       return;
     }
 
-    this.renderCard();
+    this.renderLayout();
+    this.renderPlayers();
   }
 
-  renderCard()
+  renderLayout()
   {
     this.context.save();
     {
-//<SubTexture height="190" width="140" y="1140" x="280" name="cardClubs2.png"/>
-      const rect: ImgRect = { sx: 280, sy: 1140, sw: 140, sh: 190 };
-      // this.context.translate(tank.fX, tank.fY);
+      this.room.match.layout.forEach((c,index) => {
+        if (c) {
+          this.renderCard(c, 300 + 150 * index, 512 - 85);
+        }
+      });
+    }
+    this.context.restore();
+  }
+
+  renderPlayers()
+  {
+    if (!this.room.match.players) return;
+
+    this.context.save();
+    {
+      this.renderPlayer(this.room.match.players[0]);
+    }
+    this.context.restore();
+
+    this.context.save();
+    {
+      this.context.translate(this.canvas.width/2, this.canvas.height/2);
+      this.context.rotate(Math.PI);
+      this.context.translate(-this.canvas.width/2, -this.canvas.height/2);
+      this.renderPlayer(this.room.match.players[1]);
+    }
+    this.context.restore();
+  }
+  renderPlayer(player: MatchSpeedPlayerSerialized)
+  {
+    const h1 = player?.hand!;
+    if (h1) {
+      //手札描画
+      h1.forEach((c, index) => {
+        this.renderCard(c, 30 + 150 * index, 700);
+      });
+      //deck
+      this.renderCardBack(30 + 150 * 5, 700);
+    }
+  }
+
+  renderCard(c: Card, px: number, py: number)
+  {
+    //if (c.isInvalid()) return;
+
+    this.context.save();
+    {
+      const rect = this.assets.getCardImgRect(c);
       this.context.drawImage(this.assets.imgCards,
         rect.sx, rect.sy,	// 描画元画像の右上座標
         rect.sw, rect.sh,	// 描画元画像の大きさ
-        30,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
-        40,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        px,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        py,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        rect.sw,	// 描画先領域の大きさ
+        rect.sh);	// 描画先領域の大きさ
+    }
+    this.context.restore();
+  }
+
+  renderCardBack(px: number, py: number)
+  {
+    this.context.save();
+    {
+      const rect = this.assets.getCardBackImgRect();
+      this.context.drawImage(this.assets.imgCardBack,
+        rect.sx, rect.sy,	// 描画元画像の右上座標
+        rect.sw, rect.sh,	// 描画元画像の大きさ
+        px,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        py,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
         rect.sw,	// 描画先領域の大きさ
         rect.sh);	// 描画先領域の大きさ
     }
