@@ -1,3 +1,5 @@
+import { PlayACard } from "../cmn/SerializeData";
+
 export class Player {
   constructor(strSocketID: string, nickName: string) {
     this.strSocketID = strSocketID;
@@ -5,6 +7,16 @@ export class Player {
   }
   strSocketID: string;
   nickName: string;
+
+  isDuringTheGame: boolean = false;
+  playACard: PlayACard = new PlayACard();
+
+  matchStart() {
+    this.isDuringTheGame = true;
+  }
+  matchEnd() {
+    this.isDuringTheGame = false;
+  }
 
   update(fDeltaTime: number) {
   }

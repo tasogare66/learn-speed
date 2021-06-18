@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 import { SharedSettings } from './SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { ImgRect, Assets } from './Assets';
-import { Card, RoomSerialized, MatchSpeedPlayerSerialized } from '../cmn/SerializeData';
+import { Card, RoomSerialized, MatchSpeedPlayerSerialized, PlayACard } from '../cmn/SerializeData';
 import { Util } from '../cmn/Util';
 
 export class Screen{
@@ -49,7 +49,7 @@ export class Screen{
     this.socket.on(
       'update',
       (room, iProcessingTimeNanoSec) => {
-        this.room = Object.assign(new RoomSerialized(), room);
+        this.room = new RoomSerialized().fromJSON(room);
         this.iProcessingTimeNanoSec = iProcessingTimeNanoSec;
       });
   }
@@ -180,7 +180,7 @@ export class Screen{
 
   renderCard(c: Card, px: number, py: number)
   {
-    //if (c.isInvalid()) return;
+    if (c.isInvalid()) return;
 
     this.context.save();
     {
@@ -210,5 +210,47 @@ export class Screen{
         rect.sh);	// 描画先領域の大きさ
     }
     this.context.restore();
+  }
+
+  callbackKeydown(e:KeyboardEvent) {
+    //FIXME:自分がplay中だった送る  
+    if (!e.repeat){
+      const d = new PlayACard();
+      switch (e.code) {
+        case 'KeyZ':
+        case 'KeyA':
+          d.handIdx = 0;
+          break;
+        case 'KeyX':
+        case 'KeyS':
+          d.handIdx = 1;
+          break;
+        case 'KeyC':
+        case 'KeyD':
+          d.handIdx = 2;
+          break;
+        case 'KeyV':
+        case 'KeyF':
+          d.handIdx = 3;
+          break;
+      }
+      switch (e.code) {
+        case 'KeyZ':
+        case 'KeyX':
+        case 'KeyC':
+        case 'KeyV':
+          d.layoutIdx = 1;
+          break;
+        case 'KeyA':
+        case 'KeyS':
+        case 'KeyD':
+        case 'KeyF':
+          d.layoutIdx = 0;
+          break;
+      }
+      if (d.isValid()) {
+        this.socket.emit('play-a-card', d);
+      }
+    }
   }
 }

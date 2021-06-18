@@ -17,3 +17,5 @@ window.addEventListener('beforeunload', function (e) {
   //Chrome では returnValue を設定する必要がある
   e.returnValue = '';
 });
+
+document.addEventListener('keydown', (e) => { screen.callbackKeydown(e); });

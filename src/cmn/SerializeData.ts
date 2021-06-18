@@ -43,18 +43,68 @@ export class Card {
       }
     );
   }
+  fromJSON(jsonObj: any) {
+    Object.assign(this, jsonObj);
+    return this;
+  }
 }
 
 export class MatchSpeedPlayerSerialized {
   hand: Card[] = [];
   deckLen: number = 0;
+  fromJSON(jsonObj: any) {
+    for(let c of jsonObj.hand) {
+      this.hand.push(new Card().fromJSON(c));
+    }
+    this.deckLen = jsonObj.deckLen;
+    return this;
+  }
 }
 
 export class MatchSpeedSerialized {
   players: MatchSpeedPlayerSerialized[] = [];
   layout: Card[] = [];
+  fromJSON(jsonObj: any) {
+    if (!jsonObj) return this;
+    for(let p of jsonObj.players) {
+      this.players.push(new MatchSpeedPlayerSerialized().fromJSON(p));
+    }
+    for(let c of jsonObj.layout) {
+      this.layout.push(new Card().fromJSON(c));
+    }
+    return this;
+  }
 }
 
 export class RoomSerialized {
   match: MatchSpeedSerialized = new MatchSpeedSerialized();
+  fromJSON(jsonObj: any) {
+    this.match = new MatchSpeedSerialized().fromJSON(jsonObj.match);
+    return this;
+  }
+}
+
+//client->server
+export class PlayACard {
+  handIdx: number = -1;
+  layoutIdx: number = -1;
+  isValid() {
+    return (this.handIdx >= 0 && this.layoutIdx >= 0);
+  }
+  clear() {
+    this.handIdx = -1;
+    this.layoutIdx = -1;
+  }
+  toJSON() {
+    return Object.assign(
+      {
+        handIdx: this.handIdx,
+        layoutIdx: this.layoutIdx,
+      }
+    );
+  }
+  fromJSON(jsonObj: any) {
+    Object.assign(this, jsonObj);
+    return this;
+  }
 }

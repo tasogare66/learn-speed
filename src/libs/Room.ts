@@ -15,6 +15,7 @@ export class Room {
   update(fDeltaTime: number) {
     //match削除
     if (this.matchSpeed && this.matchSpeed.needDel) {
+      this.matchSpeed.dest();
       this.matchSpeed = null; //削除
     }
     //match作れたら作る

@@ -30,6 +30,11 @@ export class Game{
         room.deletePlayer(player);
         player = null;
       });
+
+      socket.on('play-a-card', (pac) => {
+        if (!player || !player.isDuringTheGame) return;
+        player.playACard.fromJSON(pac);
+      });
     });
 
     setInterval(() => {

@@ -5,9 +5,13 @@ import { Suit, CardNo, Card } from '../cmn/SerializeData';
 class MatchSpeedPlayer {
   constructor(player: Player) {
     this.player = player;
+    this.player.matchStart();
     for (let i = 0; i < MatchSpeedPlayer.HAND_CARD_NUM; ++i) {
       this.hand.push(new Card());
     }
+  }
+  dest() {
+    this.player.matchEnd();
   }
   player: Player;
   deck: Card[] = [];
@@ -74,6 +78,9 @@ export class MatchSpeed {
     this.players = [new MatchSpeedPlayer(p0), new MatchSpeedPlayer(p1)];
     this.initMatch();
     console.log("create match:" + p0.strSocketID + " : " + p1.strSocketID);
+  }
+  dest() {
+    this.players.forEach(p => { p.dest(); });
   }
 
   delReq: boolean = false;
