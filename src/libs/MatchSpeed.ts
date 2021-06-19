@@ -125,11 +125,17 @@ export class MatchSpeed {
         p.deck.push(new Card(suit, n));
       }
     }
+    function addJocker(p:MatchSpeedPlayer){
+      p.deck.push(new Card(Suit.Joker));
+    }
     //配る
     addSuitAll(this.players[0], Suit.Spade);
     addSuitAll(this.players[0], Suit.Club);
     addSuitAll(this.players[1], Suit.Diamond);
     addSuitAll(this.players[1], Suit.Heart);
+    for(let p of this.players){
+      addJocker(p);
+    }
     this.players.forEach((mp)=>{
       //shuffle
 

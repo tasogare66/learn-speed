@@ -5,7 +5,8 @@ export const Suit = {
   Spade: 'spade',
   Club: 'club',
   Diamond: 'diamond',
-  Heart: 'heart'
+  Heart: 'heart',
+  Joker: 'joker'
 } as const;
 export type Suit = typeof Suit[keyof typeof Suit];
 

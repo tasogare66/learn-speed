@@ -85,9 +85,12 @@ export class Assets {
       { sh: 190, sw: 140, sy: 760, sx: 140 },
       { sh: 190, sw: 140, sy: 950, sx: 140 },
     ];
-    // <SubTexture height="190" width="140" y="570" x="140" name="cardJoker.png"/>
+    this.rectCardsTbl[Suit.Joker] = [
+      { sh: 190, sw: 140, sy: 570, sx: 140 },
+    ];
   }
   getCardImgRect(card: Card): ImgRect {
+    if (card.suit===Suit.Joker) return this.rectCardsTbl[card.suit][0];
     return this.rectCardsTbl[card.suit][card.no];
   }
   getCardBackImgRect(): ImgRect{
