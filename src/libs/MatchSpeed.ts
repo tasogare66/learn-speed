@@ -1,8 +1,45 @@
-import { assert } from 'console';
+import assert from 'assert'
 import { Player } from '../libs/Player';
 import { Suit, CardNo, Card, PlayACard } from '../cmn/SerializeData';
 import { Rng } from '../cmn/Util';
 import { SharedSettings } from '../cmn/SharedSettings';
+
+class LayoutInfo {
+  validNums = new Set<CardNo>();
+  card = new Card();
+  //山クリア
+  resetStack() {
+    this.validNums.clear();
+  }
+  //カード出せる?
+  canPlayACard(c: Card) {
+    if (c.isInvalid()) return false; //無効なカードは使えない
+    if (this.card.isInvalid()) return false; //まだカード出してない場合出せない
+    if (this.validNums.size <= 0) return true; //ない場合とにかく出せる
+    if (c.isJoker()) return true; //Jockerとにかく出せる
+    return this.validNums.has(c.no);
+  }
+  set(card: Card){
+    if (card.isJoker()) {
+      if (this.validNums.size > 0) {
+        const newset = new Set<CardNo>();
+        for (const n of this.validNums) {
+          newset.add(n-1);
+          newset.add(n+1);
+        }
+        this.validNums = newset;
+      }
+    } else {
+      this.resetStack();
+      this.validNums.add(Card.modCardNo(card.no-1));
+      this.validNums.add(Card.modCardNo(card.no+1));
+    }
+    this.card = card;
+  }
+  toJSON() {
+    return this.card.toJSON();
+  }
+}
 
 class MatchSpeedPlayer {
   constructor(player: Player) {
@@ -47,28 +84,25 @@ class MatchSpeedPlayer {
     for (let i = 0; i < this.hand.length; ++i) {
       if (this.hand[i] && !this.hand[i].isInvalid()) {
         const ret = this.hand[i];
-        this.hand[i] = new Card();
+        this.hand[i] = Card.empty;
         return ret;
       }
     }
-    assert(0);
-    return new Card();
-  }
-
-  canUseCard(card: Card, layout: Card): boolean {
-    if (card.isInvalid()) return false;
-    //FIXME:  
-    return true; //FIXME: 
+    return Card.empty; //cardない場合
   }
 
   //何かカード出せる場合,true
-  canUseAnyCard(): boolean {
+  canPlayAnyCard(layout: LayoutInfo[]): boolean {
     if (this.canDecToHand()) return true; //補充できる場合,true
-    //FIXME:  
+    for (const lo of layout) {
+      for (const c of this.hand) {
+        if (lo.canPlayACard(c)) return true;
+      }
+    }
     return false;
   }
 
-  update(layout: Card[]) {
+  update(layout: LayoutInfo[]) {
     for(const pac of this.player.playACards) {
       //手札追加
       if (pac.isDecToHand()){
@@ -77,16 +111,15 @@ class MatchSpeedPlayer {
       }
 
       const h = this.hand[pac.handIdx];
-      const l = layout[pac.layoutIdx];
-      if (!h && !l) {
+      const lo = layout[pac.layoutIdx];
+      if (!h || !lo) {
         assert(false);
         continue;
-      } 
-      if (!this.canUseCard(h, l)) {
-        break;
       }
-      //場札に出す
-      layout[pac.layoutIdx] = this.hand[pac.handIdx];
+      if (!lo.canPlayACard(h)) {
+        break;
+      } 
+      lo.set(h); //場札に出す
       //手札消す
       this.hand[pac.handIdx] = Card.empty;
     }
@@ -116,7 +149,7 @@ export class MatchSpeed {
   delReq: boolean = false;
   needDel: boolean = false;
   players: MatchSpeedPlayer[] = [];
-  layout: Card[] = new Array(2); //場札
+  layout: LayoutInfo[] = [ new LayoutInfo(), new LayoutInfo() ]; //場札情報
   static readonly PLAYER_NUM = 2;
 
   initMatch() {
@@ -146,18 +179,23 @@ export class MatchSpeed {
     assert(this.players.length == MatchSpeed.PLAYER_NUM);
   }
 
-  //カード出せる?
+  //誰かカード出せる?
   canPlayACardAnyPlayer() : boolean {
-    for (let i=0;i<this.layout.length;++i) {
-      if(!this.layout[i]) return false; //カード出ていない場合出せない
+    for (const p of this.players) {
+      if (p.canPlayAnyCard(this.layout)) return true;
     }
-    return true;
+    return false;
   }
 
   //場札に出す
   putLayout() {
     for (let i = 0; i < MatchSpeed.PLAYER_NUM; ++i) {
-      this.layout[i] = this.players[i].popCard();
+      const c = this.players[i].popCard();
+      if (!c.isInvalid()) { //カードが有効なら出す
+        const lo = this.layout[i];
+        lo.resetStack();
+        lo.set(c);
+      }
     }
   }
 

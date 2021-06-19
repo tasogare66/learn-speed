@@ -1,4 +1,4 @@
-import { assert } from "console";
+import assert from 'assert'
 
 export class Util {
   static deg2rad(deg: number): number {

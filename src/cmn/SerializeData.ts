@@ -39,6 +39,16 @@ export class Card {
   isInvalid(): boolean {
     return (this.suit === Suit.None);
   }
+  isJoker(): boolean {
+    return (this.suit === Suit.Joker);
+  }
+  static modCardNo(n: CardNo): CardNo {
+    while (n < 0) {
+      n += CardNo.Max;
+    }
+    n %= CardNo.Max;
+    return n;
+  }
   toJSON() {
     return Object.assign(
       {

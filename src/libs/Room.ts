@@ -1,4 +1,4 @@
-import { assert } from 'console';
+import assert from 'assert'
 import socketio from 'socket.io';
 import { Player } from './Player';
 import { MatchSpeed } from './MatchSpeed';
