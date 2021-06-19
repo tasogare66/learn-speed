@@ -150,9 +150,12 @@ export class Screen{
   {
     if (!this.room.match.players) return;
 
+    const eachPls = this.room.match.getEachPlayers(this.socket.id);
+    if (!eachPls) return;
+
     this.context.save();
     {
-      this.renderPlayer(this.room.match.players[0]);
+      this.renderPlayer(eachPls.my);
     }
     this.context.restore();
 
@@ -161,7 +164,7 @@ export class Screen{
       this.context.translate(this.canvas.width/2, this.canvas.height/2);
       this.context.rotate(Math.PI);
       this.context.translate(-this.canvas.width/2, -this.canvas.height/2);
-      this.renderPlayer(this.room.match.players[1]);
+      this.renderPlayer(eachPls.opponent);
     }
     this.context.restore();
   }
