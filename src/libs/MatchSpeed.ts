@@ -2,7 +2,7 @@ import { assert } from 'console';
 import { Player } from '../libs/Player';
 import { Suit, CardNo, Card, PlayACard } from '../cmn/SerializeData';
 import { Rng } from '../cmn/Util';
-import { SharedSettings } from '../client/SharedSettings';
+import { SharedSettings } from '../cmn/SharedSettings';
 
 class MatchSpeedPlayer {
   constructor(player: Player) {

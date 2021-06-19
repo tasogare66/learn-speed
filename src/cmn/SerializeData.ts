@@ -1,4 +1,4 @@
-import { SharedSettings } from "../client/SharedSettings";
+import { SharedSettings } from "./SharedSettings";
 
 export const Suit = {
   None: 'none',

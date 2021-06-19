@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io-client';
-import { SharedSettings } from './SharedSettings';
+import { SharedSettings } from '../cmn/SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { ImgRect, Assets } from './Assets';
 import { Card, RoomSerialized, MatchSpeedPlayerSerialized, PlayACard } from '../cmn/SerializeData';
