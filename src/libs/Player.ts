@@ -9,13 +9,20 @@ export class Player {
   nickName: string;
 
   isDuringTheGame: boolean = false;
-  playACard: PlayACard = new PlayACard();
+  playACards: PlayACard[] = [];
 
   matchStart() {
     this.isDuringTheGame = true;
   }
   matchEnd() {
     this.isDuringTheGame = false;
+  }
+
+  pushPlayACard(pac:PlayACard){
+    this.playACards.push(pac);
+  }
+  clearPlayACard() {
+    this.playACards.length = 0;
   }
 
   update(fDeltaTime: number) {

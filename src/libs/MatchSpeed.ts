@@ -1,6 +1,8 @@
 import { assert } from 'console';
 import { Player } from '../libs/Player';
-import { Suit, CardNo, Card } from '../cmn/SerializeData';
+import { Suit, CardNo, Card, PlayACard } from '../cmn/SerializeData';
+import { Rng } from '../cmn/Util';
+import { SharedSettings } from '../client/SharedSettings';
 
 class MatchSpeedPlayer {
   constructor(player: Player) {
@@ -16,7 +18,7 @@ class MatchSpeedPlayer {
   player: Player;
   deck: Card[] = [];
   hand: Card[] = []; //手札
-  static readonly HAND_CARD_NUM = 4;
+  static readonly HAND_CARD_NUM = SharedSettings.SPD_HAND_CARD_NUM;
 
   //カードの補充できる場合,true
   canDecToHand(): boolean {
@@ -28,10 +30,12 @@ class MatchSpeedPlayer {
     return false;
   }
 
-  deckToHand() {
+  //isFillだったら出せるだけ出す
+  deckToHand(isFill: boolean = false) {
     for (let i = 0; i < this.hand.length; ++i) {
       if (this.hand[i].isInvalid() && this.deck.length) {
         this.hand[i] = this.deck.pop()!;
+        if (!isFill) return;
       }
     }
   }
@@ -51,9 +55,10 @@ class MatchSpeedPlayer {
     return new Card();
   }
 
-  canUseCard() : boolean {
+  canUseCard(card: Card, layout: Card): boolean {
+    if (card.isInvalid()) return false;
     //FIXME:  
-    return false;
+    return true; //FIXME: 
   }
 
   //何かカード出せる場合,true
@@ -61,6 +66,31 @@ class MatchSpeedPlayer {
     if (this.canDecToHand()) return true; //補充できる場合,true
     //FIXME:  
     return false;
+  }
+
+  update(layout: Card[]) {
+    for(const pac of this.player.playACards) {
+      //手札追加
+      if (pac.isDecToHand()){
+        this.deckToHand(); //1枚手札に
+        continue;
+      }
+
+      const h = this.hand[pac.handIdx];
+      const l = layout[pac.layoutIdx];
+      if (!h && !l) {
+        assert(false);
+        continue;
+      } 
+      if (!this.canUseCard(h, l)) {
+        break;
+      }
+      //場札に出す
+      layout[pac.layoutIdx] = this.hand[pac.handIdx];
+      //手札消す
+      this.hand[pac.handIdx] = Card.empty;
+    }
+    this.player.clearPlayACard(); //やったら消す
   }
 
   toJSON() {
@@ -104,7 +134,7 @@ export class MatchSpeed {
       //shuffle
 
       //set hand
-      mp.deckToHand();
+      mp.deckToHand(true);
     });
     assert(this.layout.length == MatchSpeed.PLAYER_NUM);
     assert(this.players.length == MatchSpeed.PLAYER_NUM);
@@ -125,12 +155,22 @@ export class MatchSpeed {
     }
   }
 
+  //playerの更新
+  updatePlayers() {
+    const plnum = this.players.length; //2
+    const ofs = Rng.randiMax(plnum-1); //0,1,update順randomにするだけ
+    for (let i = 0; i < plnum; ++i) {
+      this.players[(i+ofs)%plnum].update(this.layout);
+    }
+  }
+
   update(fDeltaTime: number) {
     if (!this.delReq) {
       if (!this.canPlayACardAnyPlayer()) {
         //出せるカードないので場札更新
         this.putLayout();
       }
+      this.updatePlayers();
     } else {
       this.needDel = true;
     }

@@ -1,3 +1,5 @@
+import { SharedSettings } from "../client/SharedSettings";
+
 export const Suit = {
   None: 'none',
   Spade: 'spade',
@@ -32,6 +34,7 @@ export class Card {
   }
   suit: Suit;
   no: CardNo;
+  static readonly empty: Card = new Card();
   isInvalid(): boolean {
     return (this.suit === Suit.None);
   }
@@ -88,8 +91,15 @@ export class RoomSerialized {
 export class PlayACard {
   handIdx: number = -1;
   layoutIdx: number = -1;
-  isValid() {
+  isValidHand() {
     return (this.handIdx >= 0 && this.layoutIdx >= 0);
+  }
+  setDecToHand() {
+    this.clear();
+    this.handIdx = SharedSettings.SPD_HAND_CARD_NUM;
+  }
+  isDecToHand() {
+    return (this.handIdx === SharedSettings.SPD_HAND_CARD_NUM);
   }
   clear() {
     this.handIdx = -1;

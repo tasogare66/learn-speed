@@ -2,6 +2,7 @@ import socketio from 'socket.io';
 import { GameSettings } from '../libs/GameSettings';
 import { Room } from '../libs/Room';
 import { Player } from '../libs/Player';
+import { PlayACard } from '../cmn/SerializeData';
 
 export class Game{
   constructor(){}
@@ -33,7 +34,7 @@ export class Game{
 
       socket.on('play-a-card', (pac) => {
         if (!player || !player.isDuringTheGame) return;
-        player.playACard.fromJSON(pac);
+        player.pushPlayACard(new PlayACard().fromJSON(pac));
       });
     });
 

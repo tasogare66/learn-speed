@@ -212,10 +212,20 @@ export class Screen{
     this.context.restore();
   }
 
+  emitPlayACard(pac: PlayACard) {
+    this.socket.emit('play-a-card', pac);
+  }
   callbackKeydown(e:KeyboardEvent) {
     //FIXME:自分がplay中だった送る  
     if (!e.repeat){
       const d = new PlayACard();
+      //dec to hand
+      if (e.code==='Space') {
+        d.setDecToHand();
+        this.emitPlayACard(d);
+        return;
+      }
+      //hand to layout
       switch (e.code) {
         case 'KeyZ':
         case 'KeyA':
@@ -248,8 +258,9 @@ export class Screen{
           d.layoutIdx = 0;
           break;
       }
-      if (d.isValid()) {
-        this.socket.emit('play-a-card', d);
+      if (d.isValidHand()) {
+        this.emitPlayACard(d);
+        return;
       }
     }
   }
