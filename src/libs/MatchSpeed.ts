@@ -126,6 +126,15 @@ class MatchSpeedPlayer {
     this.player.clearPlayACard(); //やったら消す
   }
 
+  //終わった?
+  isFinished(): boolean {
+    if (this.deck.length) return false;
+    for (const h of this.hand) {
+      if (!h.isInvalid()) return false;
+    }
+    return true;
+  }
+
   toJSON() {
     return Object.assign(
       {
@@ -208,6 +217,17 @@ export class MatchSpeed {
     }
   }
 
+  checkFinished() {
+    let isFinished = false;
+    let isDraw = true;
+    for (const p of this.players) {
+      const pisf = p.isFinished();
+      isFinished ||= pisf;
+      isDraw &&= pisf;
+    }
+    return isFinished;
+  }
+
   update(fDeltaTime: number) {
     if (!this.delReq) {
       if (!this.canPlayACardAnyPlayer()) {
@@ -215,6 +235,10 @@ export class MatchSpeed {
         this.putLayout();
       }
       this.updatePlayers();
+      //勝ち判定
+      if (this.checkFinished()) {
+        this.deleteRequest(); //FIXME:終わりへ   
+      }
     } else {
       this.needDel = true;
     }
