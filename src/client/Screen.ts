@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 import { SharedSettings } from '../cmn/SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { ImgRect, Assets } from './Assets';
-import { Card, RoomSerialized, MatchSpeedPlayerSerialized, PlayACard } from '../cmn/SerializeData';
+import { Card, PlayACard } from '../cmn/SerializeData';
 import { ClientRoom, ClientMatchSpeedPlayer } from './ClientPlayer';
 
 export class Screen{
