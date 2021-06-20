@@ -3,6 +3,7 @@ import { SharedSettings } from '../cmn/SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { ImgRect, Assets } from './Assets';
 import { Card, RoomSerialized, MatchSpeedPlayerSerialized, PlayACard } from '../cmn/SerializeData';
+import { ClientRoom, ClientMatchSpeedPlayer } from './ClientPlayer';
 
 export class Screen{
   constructor(socket: Socket, canvas: HTMLCanvasElement) {
@@ -26,7 +27,7 @@ export class Screen{
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
   assets: Assets;
-  room: RoomSerialized = new RoomSerialized();
+  room = new ClientRoom();
   iProcessingTimeNanoSec = 0;
 
   //socketの初期化
@@ -48,11 +49,9 @@ export class Screen{
     this.socket.on(
       'update',
       (room, iProcessingTimeNanoSec) => {
-        this.room = new RoomSerialized().fromJSON(room);
         this.iProcessingTimeNanoSec = iProcessingTimeNanoSec;
-//        if (this.room && this.room.match) {
-//          this.room.match.update(this.socket.id);
-//        }
+        this.room.fromJSON(room);
+        this.room.update(this.socket.id);
       });
   }
 
@@ -74,9 +73,7 @@ export class Screen{
     //bg
     this.renderField();
 
-    if (this.room) {
-      this.renderRoom();
-    }
+    this.renderRoom();
 
     //枠の描画
     this.context.save();
@@ -152,12 +149,9 @@ export class Screen{
   {
     if (!this.room.match.players) return;
 
-    const eachPls = this.room.match.getEachPlayers(this.socket.id);
-    if (!eachPls) return;
-
     this.context.save();
     {
-      this.renderPlayer(eachPls.my);
+      this.renderPlayer(this.room.match.getPrimaryPlayer());
     }
     this.context.restore();
 
@@ -166,12 +160,13 @@ export class Screen{
       this.context.translate(this.canvas.width/2, this.canvas.height/2);
       this.context.rotate(Math.PI);
       this.context.translate(-this.canvas.width/2, -this.canvas.height/2);
-      this.renderPlayer(eachPls.opponent);
+      this.renderPlayer(this.room.match.getSecondaryPlayer());
     }
     this.context.restore();
   }
-  renderPlayer(player: MatchSpeedPlayerSerialized)
+  renderPlayer(player: ClientMatchSpeedPlayer | null)
   {
+    if (!player) return;
     const h1 = player?.hand!;
     if (h1) {
       //手札描画

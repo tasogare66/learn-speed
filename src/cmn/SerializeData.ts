@@ -67,7 +67,7 @@ export class Card {
 export class PlayerSerialized {
   strSocketID: string = "";
   nickName: string = "";
-  fromJson(jsonObj: any) {
+  fromJSON(jsonObj: any) {
     Object.assign(this, jsonObj);
     return this;
   }
@@ -78,7 +78,7 @@ export class MatchSpeedPlayerSerialized {
   hand: Card[] = [];
   deckLen: number = 0;
   fromJSON(jsonObj: any) {
-    this.player = new PlayerSerialized().fromJson(jsonObj.player);
+    this.player = new PlayerSerialized().fromJSON(jsonObj.player);
     for(let c of jsonObj.hand) {
       this.hand.push(new Card().fromJSON(c));
     }
@@ -87,27 +87,27 @@ export class MatchSpeedPlayerSerialized {
   }
 }
 
-interface EachPlayers {
-  my: MatchSpeedPlayerSerialized;
-  opponent: MatchSpeedPlayerSerialized;
-}
+// interface EachPlayers {
+//   my: MatchSpeedPlayerSerialized;
+//   opponent: MatchSpeedPlayerSerialized;
+// }
 
 export class MatchSpeedSerialized {
   uuid: string = "";
   players: MatchSpeedPlayerSerialized[] = [];
   layout: Card[] = [];
-  getEachPlayers(idstr: string): EachPlayers | null {
-    if (this.players.length == SharedSettings.SPD_PLAYER_NUM) {
-      if (this.players[0].player.strSocketID === idstr) {
-        return { my: this.players[0], opponent: this.players[1] };
-      }
-      if (this.players[1].player.strSocketID === idstr) {
-        return { my: this.players[1], opponent: this.players[0] };
-      }
-      console.assert(false);
-    }
-    return null;
-  }
+  // getEachPlayers(idstr: string): EachPlayers | null {
+  //   if (this.players.length == SharedSettings.SPD_PLAYER_NUM) {
+  //     if (this.players[0].player.strSocketID === idstr) {
+  //       return { my: this.players[0], opponent: this.players[1] };
+  //     }
+  //     if (this.players[1].player.strSocketID === idstr) {
+  //       return { my: this.players[1], opponent: this.players[0] };
+  //     }
+  //     console.assert(false);
+  //   }
+  //   return null;
+  // }
   fromJSON(jsonObj: any) {
     if (!jsonObj) return this;
     this.uuid = jsonObj.uuid;
