@@ -3,7 +3,6 @@ import { SharedSettings } from '../cmn/SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { ImgRect, Assets } from './Assets';
 import { Card, RoomSerialized, MatchSpeedPlayerSerialized, PlayACard } from '../cmn/SerializeData';
-import { Util } from '../cmn/Util';
 
 export class Screen{
   constructor(socket: Socket, canvas: HTMLCanvasElement) {
@@ -51,6 +50,9 @@ export class Screen{
       (room, iProcessingTimeNanoSec) => {
         this.room = new RoomSerialized().fromJSON(room);
         this.iProcessingTimeNanoSec = iProcessingTimeNanoSec;
+//        if (this.room && this.room.match) {
+//          this.room.match.update(this.socket.id);
+//        }
       });
   }
 
@@ -218,6 +220,7 @@ export class Screen{
   emitPlayACard(pac: PlayACard) {
     this.socket.emit('play-a-card', pac);
   }
+
   callbackKeydown(e:KeyboardEvent) {
     //FIXME:自分がplay中だった送る  
     if (!e.repeat){
@@ -266,5 +269,17 @@ export class Screen{
         return;
       }
     }
+  }
+
+  callbackMousedown(e: MouseEvent) {
+    //console.log(e);
+    const posx = e.clientX - this.canvas.offsetLeft;
+    const posy = e.clientY - this.canvas.offsetTop;
+  }
+  callbackMouseup(e: Event) {
+    //console.log(e);
+  }
+  callbackMousemove(e: Event) {
+    //console.log(e);
   }
 }

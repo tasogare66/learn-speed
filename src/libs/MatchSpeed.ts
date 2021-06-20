@@ -147,10 +147,11 @@ class MatchSpeedPlayer {
 }
 
 export class MatchSpeed {
-  constructor(p0: Player, p1: Player) {
+  constructor(uuid: string, p0: Player, p1: Player) {
+    this.uuid = uuid;
     this.players = [new MatchSpeedPlayer(p0), new MatchSpeedPlayer(p1)];
     this.initMatch();
-    console.log("create match:" + p0.strSocketID + " : " + p1.strSocketID);
+    console.log("create match["+uuid+"]:" + p0.strSocketID + " : " + p1.strSocketID);
   }
   dest() {
     this.players.forEach(p => { p.dest(); });
@@ -158,6 +159,7 @@ export class MatchSpeed {
 
   delReq: boolean = false;
   needDel: boolean = false;
+  uuid: string;
   players: MatchSpeedPlayer[] = [];
   layout: LayoutInfo[] = [ new LayoutInfo(), new LayoutInfo() ]; //場札情報
   static readonly PLAYER_NUM = 2;
@@ -251,12 +253,13 @@ export class MatchSpeed {
 
   deleteRequest(){
     this.delReq = true;
-    console.log("delete match:" + this.players[0].player.strSocketID + " : " + this.players[1].player.strSocketID);
+    console.log("delete match["+this.uuid+"]:" + this.players[0].player.strSocketID + " : " + this.players[1].player.strSocketID);
   }
 
   toJSON() {
     return Object.assign(
       {
+        uuid: this.uuid,
         players: this.players,
         layout: this.layout
       }

@@ -2,6 +2,7 @@ import assert from 'assert'
 import socketio from 'socket.io';
 import { Player } from './Player';
 import { MatchSpeed } from './MatchSpeed';
+import { nanoid } from 'nanoid';
 
 export class Room {
   constructor(io: socketio.Server) {
@@ -45,7 +46,8 @@ export class Room {
   tryCreateMatchSpeed() {
     if (!this.matchSpeed) {
       if (this.playersLst.length >= 2) { //二人必要
-        this.matchSpeed = new MatchSpeed(this.playersLst[0], this.playersLst[1]);
+        const uuid = nanoid();
+        this.matchSpeed = new MatchSpeed(uuid, this.playersLst[0], this.playersLst[1]);
       }
     }
   }

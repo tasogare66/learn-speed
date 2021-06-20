@@ -19,3 +19,6 @@ window.addEventListener('beforeunload', function (e) {
 });
 
 document.addEventListener('keydown', (e) => { screen.callbackKeydown(e); });
+document.addEventListener('mousedown', (e) => { screen.callbackMousedown(e); });
+document.addEventListener('mouseup', (e) => { screen.callbackMouseup(e); });
+document.addEventListener('musemove', (e) => { screen.callbackMousemove(e); });

@@ -93,6 +93,7 @@ interface EachPlayers {
 }
 
 export class MatchSpeedSerialized {
+  uuid: string = "";
   players: MatchSpeedPlayerSerialized[] = [];
   layout: Card[] = [];
   getEachPlayers(idstr: string): EachPlayers | null {
@@ -109,6 +110,7 @@ export class MatchSpeedSerialized {
   }
   fromJSON(jsonObj: any) {
     if (!jsonObj) return this;
+    this.uuid = jsonObj.uuid;
     for(let p of jsonObj.players) {
       this.players.push(new MatchSpeedPlayerSerialized().fromJSON(p));
     }

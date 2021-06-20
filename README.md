@@ -12,6 +12,8 @@ entry point server.js
 - npm install socket.io --save
 - npm install -D @types/socket.io
 - npm install -D @types/socket.io-client
+- npm install nanoid --save
+- npm install -D @types/nanoid
 
 - typescript
 - node version v14.15.5
