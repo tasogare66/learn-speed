@@ -1,11 +1,4 @@
-import { Suit, CardNo, Card } from "../cmn/SerializeData";
-
-export interface ImgRect {
-  sx: number;
-  sy: number;
-  sw: number;
-  sh: number;
-};
+import { ImgRect, Suit, CardNo, Card } from "../cmn/SerializeData";
 
 export interface ICardRectHash {
   [details: string]: ImgRect[];

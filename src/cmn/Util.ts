@@ -1,8 +1,18 @@
 import assert from 'assert'
+import { ImgRect } from './SerializeData';
 
 export class Util {
   static deg2rad(deg: number): number {
     return deg * (Math.PI / 180.0);
+  }
+  static pointInRect(rect: ImgRect, px: number, py: number)
+  {
+    const left = rect.sx;
+    const top = rect.sy;
+    const right = rect.sx+rect.sw;
+    const bottom = rect.sy+rect.sh;
+    return (left <= px && right >= px
+      && bottom <= py && top >= py);
   }
 }
 export class Rng {

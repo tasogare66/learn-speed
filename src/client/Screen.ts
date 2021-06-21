@@ -1,9 +1,9 @@
 import { Socket } from 'socket.io-client';
 import { SharedSettings } from '../cmn/SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
-import { ImgRect, Assets } from './Assets';
-import { Card, PlayACard } from '../cmn/SerializeData';
-import { ClientRoom, ClientMatchSpeedPlayer } from './ClientPlayer';
+import { Assets } from './Assets';
+import { PlayACard } from '../cmn/SerializeData';
+import { ClientRoom, ClientMatchSpeedPlayer, ClientCard } from './ClientPlayer';
 
 export class Screen{
   constructor(socket: Socket, canvas: HTMLCanvasElement) {
@@ -178,7 +178,7 @@ export class Screen{
     }
   }
 
-  renderCard(c: Card, px: number, py: number)
+  renderCard(c: ClientCard, px: number, py: number)
   {
     if (c.isInvalid()) return;
 
@@ -188,10 +188,10 @@ export class Screen{
       this.context.drawImage(this.assets.imgCards,
         rect.sx, rect.sy,	// 描画元画像の右上座標
         rect.sw, rect.sh,	// 描画元画像の大きさ
-        px,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
-        py,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
-        rect.sw,	// 描画先領域の大きさ
-        rect.sh);	// 描画先領域の大きさ
+        c.rect.sx,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        c.rect.sy,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        c.rect.sw,	// 描画先領域の大きさ
+        c.rect.sh);	// 描画先領域の大きさ
     }
     this.context.restore();
   }
@@ -212,12 +212,16 @@ export class Screen{
     this.context.restore();
   }
 
+  isPlaying(): boolean {
+    return this.room.isPlaying();
+  }
+
   emitPlayACard(pac: PlayACard) {
     this.socket.emit('play-a-card', pac);
   }
 
   callbackKeydown(e:KeyboardEvent) {
-    //FIXME:自分がplay中だった送る  
+    if (!this.isPlaying()) return;
     if (!e.repeat){
       const d = new PlayACard();
       //dec to hand
@@ -267,14 +271,16 @@ export class Screen{
   }
 
   callbackMousedown(e: MouseEvent) {
-    //console.log(e);
     const posx = e.clientX - this.canvas.offsetLeft;
     const posy = e.clientY - this.canvas.offsetTop;
+    this.room.match.callbackMousedown(posx, posy);
   }
-  callbackMouseup(e: Event) {
+  callbackMouseup(e: MouseEvent) {
+    if (!this.isPlaying()) return;
     //console.log(e);
   }
   callbackMousemove(e: Event) {
+    if (!this.isPlaying()) return;
     //console.log(e);
   }
 }

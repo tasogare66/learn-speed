@@ -1,6 +1,13 @@
 import { assert } from "console";
 import { SharedSettings } from "./SharedSettings";
 
+export interface ImgRect {
+  sx: number;
+  sy: number;
+  sw: number;
+  sh: number;
+};
+
 export const Suit = {
   None: 'none',
   Spade: 'spade',

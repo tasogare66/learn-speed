@@ -1,12 +1,19 @@
-import { Suit, CardNo, Card, PlayerSerialized } from '../cmn/SerializeData';
+import { ImgRect, Suit, CardNo, Card, PlayerSerialized } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
-import { ImgRect } from './Assets';
+import { RenderingSettings } from './RenderingSettings';
 
 export class ClientCard extends Card {
   constructor(suit: Suit = Suit.None, no: CardNo = CardNo.Max) {
     super(suit, no);
   }
-  rect: ImgRect = { sy: 0, sx: 0, sh: 0, sw: 0 };
+  rect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
+  setPos(px: number, py: number) {
+    this.rect.sx = px;
+    this.rect.sy = py;
+  }
+  pointInRect(px: number, py: number): boolean {
+    return false;
+  }
 }
 
 export class ClientMatchSpeedPlayer {
@@ -24,6 +31,11 @@ export class ClientMatchSpeedPlayer {
   }
   isSamePlayer(idstr: string) {
     return (this.player.strSocketID === idstr);
+  }
+  update() {
+    this.hand.forEach((c, index) => {
+      if (c) c.setPos(30 + 150 * index, 700);
+    });
   }
 }
 
@@ -57,6 +69,7 @@ export class ClientMatchSpeed {
     //clear
     this.myPlayer = null;
     this.dspPlayers.length = 0;
+    //decide myPlayer
     if (this.players.length == SharedSettings.SPD_PLAYER_NUM) {
       if (this.players[1].isSamePlayer(idstr)) {
         this.myPlayer = this.players[1];
@@ -70,6 +83,13 @@ export class ClientMatchSpeed {
         this.myPlayer = this.players[0];
       }
     }
+    //update
+    this.layout.forEach((c,index) => {
+      if (c) c.setPos(300 + 150 * index, 512 - 85);
+    });
+    for(const p of this.dspPlayers){
+      p.update();
+    }
   }
 
   getPrimaryPlayer(): ClientMatchSpeedPlayer | null {
@@ -77,6 +97,16 @@ export class ClientMatchSpeed {
   }
   getSecondaryPlayer() : ClientMatchSpeedPlayer | null {
     return this.dspPlayers[1];
+  }
+  isPlaying(): boolean {
+    return (this.myPlayer !== null);
+  }
+
+  callbackMousedown(posx: number, posy: number) {
+  }
+  callbackMouseup(posx: number, posy: number) {
+  }
+  callbackMousemove(posx: number, posy: number) {
   }
 }
 
@@ -97,5 +127,9 @@ export class ClientRoom {
   }
   update(idstr: string) {
     this.match.update(idstr);
+  }
+
+  isPlaying(): boolean {
+    return this.match.isPlaying();
   }
 }
