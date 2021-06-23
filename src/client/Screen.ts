@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 import { SharedSettings } from '../cmn/SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { Assets } from './Assets';
-import { PlayACard } from '../cmn/SerializeData';
+import { Vec2f, PlayACard } from '../cmn/SerializeData';
 import { ClientRoom, ClientMatchSpeedPlayer, ClientCard } from './ClientPlayer';
 
 export class Screen{
@@ -18,7 +18,7 @@ export class Screen{
     this.canvas.height = SharedSettings.FIELD_HEIGHT;
 
     this.initSocket();
- 
+
     //コンテキストの初期化
     this.context.imageSmoothingEnabled = false;
   }
@@ -270,10 +270,21 @@ export class Screen{
     }
   }
 
+  static getCanvasPosition(tgt: HTMLCanvasElement, x: number, y: number): Vec2f {
+    const rect = tgt.getBoundingClientRect();
+    // ブラウザ上
+    const viewX = x - rect.left;
+    const viewY = y - rect.top;
+    // 表示サイズとキャンバスの実サイズの比率を求める
+    const scaleWidth = tgt.clientWidth / tgt.width;
+    const scaleHeight = tgt.clientHeight / tgt.height;
+    // キャンバス座標
+    return { x: viewX / scaleWidth, y: viewY / scaleHeight };
+  }
+
   callbackMousedown(e: MouseEvent) {
-    const posx = e.clientX - this.canvas.offsetLeft;
-    const posy = e.clientY - this.canvas.offsetTop;
-    this.room.match.callbackMousedown(posx, posy);
+    const pos = Screen.getCanvasPosition(this.canvas, e.clientX, e.clientY);
+    this.room.match.callbackMousedown(pos.x, pos.y);
   }
   callbackMouseup(e: MouseEvent) {
     if (!this.isPlaying()) return;

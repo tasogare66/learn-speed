@@ -1,5 +1,9 @@
-import assert from 'assert'
 import { ImgRect } from './SerializeData';
+
+export function assert(condition: any, msg?: string): asserts condition {
+  if (!condition) {
+    throw new Error(msg || "Assertion failed");  }
+}
 
 export class Util {
   static deg2rad(deg: number): number {
@@ -11,8 +15,8 @@ export class Util {
     const top = rect.sy;
     const right = rect.sx+rect.sw;
     const bottom = rect.sy+rect.sh;
-    return (left <= px && right >= px
-      && bottom <= py && top >= py);
+    return (left <= px && px <= right
+      && top <= py && py <= bottom);
   }
 }
 export class Rng {

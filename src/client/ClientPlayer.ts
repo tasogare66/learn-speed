@@ -1,5 +1,6 @@
 import { ImgRect, Suit, CardNo, Card, PlayerSerialized } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
+import { Util } from '../cmn/Util';
 import { RenderingSettings } from './RenderingSettings';
 
 export class ClientCard extends Card {
@@ -12,7 +13,7 @@ export class ClientCard extends Card {
     this.rect.sy = py;
   }
   pointInRect(px: number, py: number): boolean {
-    return false;
+    return Util.pointInRect(this.rect, px, py);
   }
 }
 
@@ -36,6 +37,20 @@ export class ClientMatchSpeedPlayer {
     this.hand.forEach((c, index) => {
       if (c) c.setPos(30 + 150 * index, 700);
     });
+  }
+
+  callbackMousedown(posx: number, posy: number) {
+    for (const c of this.hand) {
+      if (c.pointInRect(posx, posy)) {
+        c.setPos(posx, posy);
+        console.log(c);
+        break;
+      }
+    }
+  }
+  callbackMouseup(posx: number, posy: number) {
+  }
+  callbackMousemove(posx: number, posy: number) {
   }
 }
 
@@ -103,10 +118,13 @@ export class ClientMatchSpeed {
   }
 
   callbackMousedown(posx: number, posy: number) {
+    if (this.myPlayer) this.myPlayer.callbackMousedown(posx, posy);
   }
   callbackMouseup(posx: number, posy: number) {
+    if (this.myPlayer) this.myPlayer.callbackMouseup(posx, posy);
   }
   callbackMousemove(posx: number, posy: number) {
+    if (this.myPlayer) this.myPlayer.callbackMousemove(posx, posy);
   }
 }
 

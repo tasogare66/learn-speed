@@ -1,6 +1,11 @@
 import { assert } from "console";
 import { SharedSettings } from "./SharedSettings";
 
+export interface Vec2f {
+  x: number;
+  y: number;
+};
+
 export interface ImgRect {
   sx: number;
   sy: number;
