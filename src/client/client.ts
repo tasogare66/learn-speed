@@ -21,4 +21,8 @@ window.addEventListener('beforeunload', function (e) {
 document.addEventListener('keydown', (e) => { screen.callbackKeydown(e); });
 canvas.addEventListener('mousedown', (e) => { screen.callbackMousedown(e); });
 canvas.addEventListener('mouseup', (e) => { screen.callbackMouseup(e); });
-canvas.addEventListener('musemove', (e) => { screen.callbackMousemove(e); });
+canvas.addEventListener('mousemove', (e) => { screen.callbackMousemove(e); });
+
+export function clientSocket() : Socket {
+  return socket;
+}

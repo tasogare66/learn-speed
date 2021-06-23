@@ -1,13 +1,23 @@
-import { ImgRect, Suit, CardNo, Card, PlayerSerialized } from '../cmn/SerializeData';
+import { Socket } from 'socket.io-client';
+import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
 import { Util } from '../cmn/Util';
+import { clientSocket } from './client';
 import { RenderingSettings } from './RenderingSettings';
 
+export class ClientSocket {
+  static emitPlayACard(socket: Socket, pac: PlayACard) {
+    socket.emit('play-a-card', pac);
+  }
+}
+
 export class ClientCard extends Card {
-  constructor(suit: Suit = Suit.None, no: CardNo = CardNo.Max) {
+  constructor(index: number, suit: Suit = Suit.None, no: CardNo = CardNo.Max) {
     super(suit, no);
+    this.index = index;
   }
   rect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
+  index: number;
   setPos(px: number, py: number) {
     this.rect.sx = px;
     this.rect.sy = py;
@@ -25,7 +35,7 @@ export class ClientMatchSpeedPlayer {
     this.player.fromJSON(jsonObj.player);
     this.hand.length = jsonObj.hand.length;
     for (let i = 0; i < this.hand.length; ++i) {
-      if (!this.hand[i]) this.hand[i] = new ClientCard();
+      if (!this.hand[i]) this.hand[i] = new ClientCard(i);
       this.hand[i].fromJSON(jsonObj.hand[i]);
     }
     this.deckLen = jsonObj.decLen;
@@ -39,16 +49,18 @@ export class ClientMatchSpeedPlayer {
     });
   }
 
+  dragCard: ClientCard | null = null;
+  getDragCard() { return this.dragCard; }
+  clearDragCard() { this.dragCard = null; }
+
   callbackMousedown(posx: number, posy: number) {
     for (const c of this.hand) {
+      if (c.isInvalid()) continue;
       if (c.pointInRect(posx, posy)) {
-        c.setPos(posx, posy);
-        console.log(c);
+        this.dragCard = c;
         break;
       }
     }
-  }
-  callbackMouseup(posx: number, posy: number) {
   }
   callbackMousemove(posx: number, posy: number) {
   }
@@ -70,7 +82,7 @@ export class ClientMatchSpeed {
     //layout
     this.layout.length = jsonObj.layout.length;
     for (let i = 0; i < this.layout.length; ++i) {
-      if (!this.layout[i]) this.layout[i] = new ClientCard();
+      if (!this.layout[i]) this.layout[i] = new ClientCard(i);
       this.layout[i].fromJSON(jsonObj.layout[i]);
     }
   }
@@ -121,7 +133,22 @@ export class ClientMatchSpeed {
     if (this.myPlayer) this.myPlayer.callbackMousedown(posx, posy);
   }
   callbackMouseup(posx: number, posy: number) {
-    if (this.myPlayer) this.myPlayer.callbackMouseup(posx, posy);
+    if (this.myPlayer) {
+      const dragc = this.myPlayer.getDragCard();
+      if (!dragc) return; //dragしてない場合return
+      for (let i=0;i< this.layout.length;++i){
+        const loc = this.layout[i];
+        if (loc.isInvalid()) continue;
+        if (loc.pointInRect(posx, posy)) {
+          const d = new PlayACard();
+          d.layoutIdx = loc.index;
+          d.handIdx= dragc.index;
+          ClientSocket.emitPlayACard(clientSocket(), d);
+          break;
+        }
+      }
+      this.myPlayer.clearDragCard();
+    }
   }
   callbackMousemove(posx: number, posy: number) {
     if (this.myPlayer) this.myPlayer.callbackMousemove(posx, posy);
@@ -135,7 +162,7 @@ export class ClientRoom {
   }
   fromJSON(jsonObj: any) {
     if (jsonObj.match) {
-      if (this.match.isSameMatch(jsonObj.match.uuid)) {
+      if (!this.match.isSameMatch(jsonObj.match.uuid)) {
         this.deleteMatch();
       }
       this.match.fromJSON(jsonObj.match);

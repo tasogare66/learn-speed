@@ -287,11 +287,11 @@ export class Screen{
     this.room.match.callbackMousedown(pos.x, pos.y);
   }
   callbackMouseup(e: MouseEvent) {
-    if (!this.isPlaying()) return;
-    //console.log(e);
+    const pos = Screen.getCanvasPosition(this.canvas, e.clientX, e.clientY);
+    this.room.match.callbackMouseup(pos.x, pos.y);
   }
-  callbackMousemove(e: Event) {
-    if (!this.isPlaying()) return;
-    //console.log(e);
+  callbackMousemove(e: MouseEvent) {
+    const pos = Screen.getCanvasPosition(this.canvas, e.clientX, e.clientY);
+    this.room.match.callbackMousemove(pos.x, pos.y);
   }
 }
