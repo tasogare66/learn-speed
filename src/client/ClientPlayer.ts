@@ -31,6 +31,9 @@ export class ClientMatchSpeedPlayer {
   player = new PlayerSerialized();
   hand: ClientCard[] = [];
   deckLen: number = 0;
+  constructor() {
+    this.decCard.setPos(30 + 150 * 5, 700);
+  }
   fromJSON(jsonObj: any) {
     this.player.fromJSON(jsonObj.player);
     this.hand.length = jsonObj.hand.length;
@@ -38,7 +41,7 @@ export class ClientMatchSpeedPlayer {
       if (!this.hand[i]) this.hand[i] = new ClientCard(i);
       this.hand[i].fromJSON(jsonObj.hand[i]);
     }
-    this.deckLen = jsonObj.decLen;
+    this.deckLen = jsonObj.deckLen;
   }
   isSamePlayer(idstr: string) {
     return (this.player.strSocketID === idstr);
@@ -49,11 +52,21 @@ export class ClientMatchSpeedPlayer {
     });
   }
 
+  decCard: ClientCard = new ClientCard(-1);
   dragCard: ClientCard | null = null;
   getDragCard() { return this.dragCard; }
   clearDragCard() { this.dragCard = null; }
+  hasDeck(): boolean { return (this.deckLen > 0); }
 
   callbackMousedown(posx: number, posy: number) {
+    //dec判定
+    if (this.hasDeck() && this.decCard.pointInRect(posx, posy)) {
+      const d = new PlayACard();
+      d.setDecToHand();
+      ClientSocket.emitPlayACard(clientSocket(), d);
+      return;
+    }
+    //hand判定
     for (const c of this.hand) {
       if (c.isInvalid()) continue;
       if (c.pointInRect(posx, posy)) {

@@ -146,6 +146,23 @@ class MatchSpeedPlayer {
   }
 }
 
+function shuffleCards(array: Card[]) { //destructive method
+  const length = array == null ? 0 : array.length
+  if (!length) {
+    return; //return [];
+  }
+  let index = -1
+  const lastIndex = length - 1;
+  const result = array; //copyArray(array)
+  while (++index < length) {
+    const rand = index + Math.floor(Rng.randf() * (lastIndex - index + 1));
+    const value = result[rand];
+    result[rand] = result[index];
+    result[index] = value;
+  }
+  //return result
+}
+
 export class MatchSpeed {
   constructor(uuid: string, p0: Player, p1: Player) {
     this.uuid = uuid;
@@ -182,8 +199,7 @@ export class MatchSpeed {
       addJocker(p);
     }
     this.players.forEach((mp)=>{
-      //shuffle
-
+      shuffleCards(mp.deck);
       //set hand
       mp.deckToHand(true);
     });

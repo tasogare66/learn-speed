@@ -174,7 +174,10 @@ export class Screen{
         this.renderCard(c, 30 + 150 * index, 700);
       });
       //deck
-      this.renderCardBack(30 + 150 * 5, 700);
+      if (player.hasDeck()) {
+        const dc = player.decCard;
+        this.renderCardBack(dc.rect.sx, dc.rect.sy);
+      }
     }
   }
 
