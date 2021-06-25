@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io-client';
-import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard } from '../cmn/SerializeData';
+import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
 import { Util } from '../cmn/Util';
 import { clientSocket } from './client';
@@ -17,10 +17,22 @@ export class ClientCard extends Card {
     this.index = index;
   }
   rect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
+  baseRect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
   index: number;
-  setPos(px: number, py: number) {
+  setBasePos(px: number, py: number) {
+    this.baseRect.sx = px;
+    this.baseRect.sy = py;
+  }
+  setCurPos(px: number, py: number) {
     this.rect.sx = px;
     this.rect.sy = py;
+  }
+  resetCurPos() {
+    this.setCurPos(this.baseRect.sx, this.baseRect.sy);
+  }
+  setBothPos(px: number, py: number) {
+    this.setBasePos(px, py);
+    this.resetCurPos();
   }
   pointInRect(px: number, py: number): boolean {
     return Util.pointInRect(this.rect, px, py);
@@ -32,7 +44,7 @@ export class ClientMatchSpeedPlayer {
   hand: ClientCard[] = [];
   deckLen: number = 0;
   constructor() {
-    this.decCard.setPos(30 + 150 * 5, 700);
+    this.decCard.setBothPos(30 + 150 * 5, 700);
   }
   fromJSON(jsonObj: any) {
     this.player.fromJSON(jsonObj.player);
@@ -40,6 +52,7 @@ export class ClientMatchSpeedPlayer {
     for (let i = 0; i < this.hand.length; ++i) {
       if (!this.hand[i]) this.hand[i] = new ClientCard(i);
       this.hand[i].fromJSON(jsonObj.hand[i]);
+      this.hand[i].setBasePos(30 + 150 * i, 700);
     }
     this.deckLen = jsonObj.deckLen;
   }
@@ -48,14 +61,18 @@ export class ClientMatchSpeedPlayer {
   }
   update() {
     this.hand.forEach((c, index) => {
-      if (c) c.setPos(30 + 150 * index, 700);
+      if (c && c !== this.dragCard) c.resetCurPos();
     });
   }
 
   decCard: ClientCard = new ClientCard(-1);
   dragCard: ClientCard | null = null;
+  dragOffset: Vec2f = { x: 0, y: 0 };
   getDragCard() { return this.dragCard; }
-  clearDragCard() { this.dragCard = null; }
+  clearDragCard() {
+    this.dragCard = null;
+    this.dragOffset = { x: 0, y: 0 };
+  }
   hasDeck(): boolean { return (this.deckLen > 0); }
 
   callbackMousedown(posx: number, posy: number) {
@@ -71,11 +88,16 @@ export class ClientMatchSpeedPlayer {
       if (c.isInvalid()) continue;
       if (c.pointInRect(posx, posy)) {
         this.dragCard = c;
+        this.dragOffset.x = c.rect.sx - posx;
+        this.dragOffset.y = c.rect.sy - posy;
         break;
       }
     }
   }
   callbackMousemove(posx: number, posy: number) {
+    if (this.dragCard) {
+      this.dragCard.setCurPos(posx + this.dragOffset.x, posy + this.dragOffset.y);
+    }
   }
 }
 
@@ -125,7 +147,7 @@ export class ClientMatchSpeed {
     }
     //update
     this.layout.forEach((c,index) => {
-      if (c) c.setPos(300 + 150 * index, 512 - 85);
+      if (c) c.setBothPos(300 + 150 * index, 512 - 85);
     });
     for(const p of this.dspPlayers){
       p.update();
