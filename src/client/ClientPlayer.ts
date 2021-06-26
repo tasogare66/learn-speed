@@ -44,7 +44,7 @@ export class ClientMatchSpeedPlayer {
   hand: ClientCard[] = [];
   deckLen: number = 0;
   constructor() {
-    this.decCard.setBothPos(30 + 150 * 5, 700);
+    this.decCard.setBothPos(SharedSettings.CANVAS_HEIGHT-RenderingSettings.CARD_WIDTH-20, SharedSettings.CANVAS_HEIGHT * 3 / 4 - RenderingSettings.CARD_HEIGHT / 2);
   }
   fromJSON(jsonObj: any) {
     this.player.fromJSON(jsonObj.player);
@@ -52,7 +52,10 @@ export class ClientMatchSpeedPlayer {
     for (let i = 0; i < this.hand.length; ++i) {
       if (!this.hand[i]) this.hand[i] = new ClientCard(i);
       this.hand[i].fromJSON(jsonObj.hand[i]);
-      this.hand[i].setBasePos(30 + 150 * i, 700);
+      const tmpx = 16; //中心からのずれ
+      const st = SharedSettings.CANVAS_WIDTH / 2 - tmpx * 3 - RenderingSettings.CARD_WIDTH * 2;
+      const inc = RenderingSettings.CARD_WIDTH + 2*tmpx;
+      this.hand[i].setBasePos(st + inc * i, SharedSettings.CANVAS_HEIGHT * 3 / 4 - RenderingSettings.CARD_HEIGHT / 2);
     }
     this.deckLen = jsonObj.deckLen;
   }
@@ -68,6 +71,7 @@ export class ClientMatchSpeedPlayer {
   decCard: ClientCard = new ClientCard(-1);
   dragCard: ClientCard | null = null;
   dragOffset: Vec2f = { x: 0, y: 0 };
+  mousePos: Vec2f = { x: 0, y: 0 };
   getDragCard() { return this.dragCard; }
   clearDragCard() {
     this.dragCard = null;
@@ -95,6 +99,8 @@ export class ClientMatchSpeedPlayer {
     }
   }
   callbackMousemove(posx: number, posy: number) {
+    this.mousePos.x = posx;
+    this.mousePos.y = posy;
     if (this.dragCard) {
       this.dragCard.setCurPos(posx + this.dragOffset.x, posy + this.dragOffset.y);
     }
@@ -145,10 +151,18 @@ export class ClientMatchSpeed {
         this.myPlayer = this.players[0];
       }
     }
-    //update
-    this.layout.forEach((c,index) => {
-      if (c) c.setBothPos(300 + 150 * index, 512 - 85);
-    });
+    //update layout
+    {
+      const tmpx = 60; //中心からのずれ
+      const st = SharedSettings.CANVAS_WIDTH / 2 - tmpx - RenderingSettings.CARD_WIDTH;
+      const inc = RenderingSettings.CARD_WIDTH + 2*tmpx;
+      this.layout.forEach((c,index) => {
+        if (c) {
+          c.setBothPos(st + inc * index, (SharedSettings.CANVAS_HEIGHT - RenderingSettings.CARD_HEIGHT) / 2);
+        }
+      });
+    }
+    //update players
     for(const p of this.dspPlayers){
       p.update();
     }

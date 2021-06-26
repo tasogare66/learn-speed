@@ -14,8 +14,8 @@ export class Screen{
     this.assets = new Assets();
 
     //キャンバスの初期化
-    this.canvas.width = SharedSettings.FIELD_WIDTH;
-    this.canvas.height = SharedSettings.FIELD_HEIGHT;
+    this.canvas.width = SharedSettings.CANVAS_WIDTH;
+    this.canvas.height = SharedSettings.CANVAS_HEIGHT;
 
     this.initSocket();
 
@@ -93,14 +93,16 @@ export class Screen{
         this.canvas.width - 30 * 10, 40);
     }
     this.context.restore();
+
+    this.renderDebug();
   }
 
   renderField()
   {
     this.context.save();
     {
-      const iCountX = Math.floor(SharedSettings.FIELD_WIDTH / RenderingSettings.FIELDTILE_WIDTH);
-      const iCountY = Math.floor(SharedSettings.FIELD_HEIGHT / RenderingSettings.FIELDTILE_HEIGHT);
+      const iCountX = Math.floor(SharedSettings.CANVAS_WIDTH / RenderingSettings.FIELDTILE_WIDTH);
+      const iCountY = Math.floor(SharedSettings.CANVAS_HEIGHT / RenderingSettings.FIELDTILE_HEIGHT);
       for (let iIndexY = 0; iIndexY < iCountY; iIndexY++) {
         for (let iIndexX = 0; iIndexX < iCountX; iIndexX++) {
           this.context.drawImage(this.assets.imageField,
@@ -138,7 +140,7 @@ export class Screen{
     {
       this.room.match.layout.forEach((c,index) => {
         if (c) {
-          this.renderCard(c, 300 + 150 * index, 512 - 85);
+          this.renderCard(c);
         }
       });
     }
@@ -151,16 +153,16 @@ export class Screen{
 
     this.context.save();
     {
-      this.renderPlayer(this.room.match.getPrimaryPlayer());
+      this.context.translate(this.canvas.width/2, this.canvas.height/2);
+      this.context.rotate(Math.PI);
+      this.context.translate(-this.canvas.width/2, -this.canvas.height/2);
+      this.renderPlayer(this.room.match.getSecondaryPlayer());
     }
     this.context.restore();
 
     this.context.save();
     {
-      this.context.translate(this.canvas.width/2, this.canvas.height/2);
-      this.context.rotate(Math.PI);
-      this.context.translate(-this.canvas.width/2, -this.canvas.height/2);
-      this.renderPlayer(this.room.match.getSecondaryPlayer());
+      this.renderPlayer(this.room.match.getPrimaryPlayer());
     }
     this.context.restore();
   }
@@ -169,19 +171,22 @@ export class Screen{
     if (!player) return;
     const h1 = player?.hand!;
     if (h1) {
-      //手札描画
-      h1.forEach((c, index) => {
-        this.renderCard(c, 30 + 150 * index, 700);
-      });
       //deck
       if (player.hasDeck()) {
         const dc = player.decCard;
         this.renderCardBack(dc.rect.sx, dc.rect.sy);
       }
+      //手札描画
+      h1.forEach((c, index) => {
+        if (c !== player.dragCard) this.renderCard(c);
+      });
+      if (player.dragCard) {
+        this.renderCard(player.dragCard);
+      }
     }
   }
 
-  renderCard(c: ClientCard, px: number, py: number)
+  renderCard(c: ClientCard)
   {
     if (c.isInvalid()) return;
 
@@ -221,6 +226,23 @@ export class Screen{
 
   emitPlayACard(pac: PlayACard) {
     this.socket.emit('play-a-card', pac);
+  }
+
+  drawLine(st:Vec2f, ed:Vec2f) {
+    this.context.beginPath();
+    this.context.moveTo(st.x, st.y);
+    this.context.lineTo(ed.x, ed.y);
+    this.context.stroke();
+  }
+
+  //for debug
+  renderDebug(){
+    this.context.save();
+    {
+      this.drawLine({ x: SharedSettings.CANVAS_WIDTH / 2, y: 0 }, { x: SharedSettings.CANVAS_WIDTH / 2, y: SharedSettings.CANVAS_HEIGHT });
+      this.drawLine({ x: 0, y: SharedSettings.CANVAS_HEIGHT/2 }, { x: SharedSettings.CANVAS_WIDTH, y: SharedSettings.CANVAS_HEIGHT/2 });
+    }
+    this.context.restore();
   }
 
   callbackKeydown(e:KeyboardEvent) {
