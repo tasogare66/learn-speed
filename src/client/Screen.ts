@@ -94,7 +94,7 @@ export class Screen{
     }
     this.context.restore();
 
-    this.renderDebug();
+    //this.renderDebug();
   }
 
   renderField()
@@ -175,7 +175,7 @@ export class Screen{
       //deck
       if (player.hasDeck()) {
         const dc = player.decCard;
-        this.renderCardBack(dc.rect.sx, dc.rect.sy);
+        this.renderCardBack(dc);
       }
       //手札描画
       h1.forEach((c, index) => {
@@ -212,7 +212,7 @@ export class Screen{
     this.context.restore();
   }
 
-  renderCardBack(px: number, py: number)
+  renderCardBack(c: ClientCard)
   {
     this.context.save();
     {
@@ -220,10 +220,11 @@ export class Screen{
       this.context.drawImage(this.assets.imgCardBack,
         rect.sx, rect.sy,	// 描画元画像の右上座標
         rect.sw, rect.sh,	// 描画元画像の大きさ
-        px,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
-        py,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        c.rect.sx,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        c.rect.sy,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
         rect.sw,	// 描画先領域の大きさ
         rect.sh);	// 描画先領域の大きさ
+      this.drawRect(c.touchRect); //for debug
     }
     this.context.restore();
   }

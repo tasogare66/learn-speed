@@ -11,6 +11,13 @@ export class ClientSocket {
   }
 }
 
+interface PositionOffset{
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
 export class ClientCard extends Card {
   constructor(index: number, suit: Suit = Suit.None, no: CardNo = CardNo.Max) {
     super(suit, no);
@@ -19,6 +26,7 @@ export class ClientCard extends Card {
   rect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
   baseRect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
   touchRect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
+  touchOffset: PositionOffset = { top: 0, bottom: 0, left: 0, right: 0 };
   index: number;
   setBasePos(px: number, py: number) {
     this.baseRect.sx = px;
@@ -27,7 +35,7 @@ export class ClientCard extends Card {
   setCurPos(px: number, py: number) {
     this.rect.sx = px;
     this.rect.sy = py;
-    this.touchRect = this.rect;
+    this.updTouchRect();
   }
   resetCurPos() {
     this.setCurPos(this.baseRect.sx, this.baseRect.sy);
@@ -35,6 +43,15 @@ export class ClientCard extends Card {
   setBothPos(px: number, py: number) {
     this.setBasePos(px, py);
     this.resetCurPos();
+  }
+  setTouchOffset(top:number, bottom:number, left:number, right:number){
+    this.touchOffset = { top: top, bottom: bottom, left: left, right: right };
+  }
+  private updTouchRect() {
+    this.touchRect.sx = this.rect.sx - this.touchOffset.left;
+    this.touchRect.sy = this.rect.sy - this.touchOffset.top;
+    this.touchRect.sw = this.rect.sw + this.touchOffset.left + this.touchOffset.right;
+    this.touchRect.sh = this.rect.sh + this.touchOffset.top + this.touchOffset.bottom;
   }
   pointInRect(px: number, py: number): boolean {
     return Util.pointInRect(this.touchRect, px, py);
@@ -46,6 +63,7 @@ export class ClientMatchSpeedPlayer {
   hand: ClientCard[] = [];
   deckLen: number = 0;
   constructor() {
+    this.decCard.setTouchOffset(30,30,10,10);
     this.decCard.setBothPos(SharedSettings.CANVAS_HEIGHT-RenderingSettings.CARD_WIDTH-20, SharedSettings.CANVAS_HEIGHT * 3 / 4 - RenderingSettings.CARD_HEIGHT / 2);
   }
   fromJSON(jsonObj: any) {
@@ -53,11 +71,13 @@ export class ClientMatchSpeedPlayer {
     this.hand.length = jsonObj.hand.length;
     for (let i = 0; i < this.hand.length; ++i) {
       if (!this.hand[i]) this.hand[i] = new ClientCard(i);
-      this.hand[i].fromJSON(jsonObj.hand[i]);
+      const dsthnd = this.hand[i];
+      dsthnd.fromJSON(jsonObj.hand[i]);
       const tmpx = 16; //中心からのずれ
       const st = SharedSettings.CANVAS_WIDTH / 2 - tmpx * 3 - RenderingSettings.CARD_WIDTH * 2;
-      const inc = RenderingSettings.CARD_WIDTH + 2*tmpx;
-      this.hand[i].setBasePos(st + inc * i, SharedSettings.CANVAS_HEIGHT * 3 / 4 - RenderingSettings.CARD_HEIGHT / 2);
+      const inc = RenderingSettings.CARD_WIDTH + 2 * tmpx;
+      dsthnd.setTouchOffset(20, 60, 14, 14);
+      dsthnd.setBasePos(st + inc * i, SharedSettings.CANVAS_HEIGHT * 3 / 4 - RenderingSettings.CARD_HEIGHT / 2);
     }
     this.deckLen = jsonObj.deckLen;
   }
@@ -160,6 +180,9 @@ export class ClientMatchSpeed {
       const inc = RenderingSettings.CARD_WIDTH + 2*tmpx;
       this.layout.forEach((c,index) => {
         if (c) {
+          const margin = 80;
+          if (index===0) c.setTouchOffset(60,60,60+margin,60);
+          else c.setTouchOffset(60,60,60,60+margin);
           c.setBothPos(st + inc * index, (SharedSettings.CANVAS_HEIGHT - RenderingSettings.CARD_HEIGHT) / 2);
         }
       });
