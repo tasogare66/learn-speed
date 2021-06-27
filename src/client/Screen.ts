@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 import { SharedSettings } from '../cmn/SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { Assets } from './Assets';
-import { Vec2f, PlayACard } from '../cmn/SerializeData';
+import { Vec2f, PlayACard, ImgRect } from '../cmn/SerializeData';
 import { ClientRoom, ClientMatchSpeedPlayer, ClientCard } from './ClientPlayer';
 
 export class Screen{
@@ -163,6 +163,7 @@ export class Screen{
     this.context.save();
     {
       this.renderPlayer(this.room.match.getPrimaryPlayer());
+      this.renderMyPlayer(this.room.match.getMyPlayer());
     }
     this.context.restore();
   }
@@ -185,6 +186,12 @@ export class Screen{
       }
     }
   }
+  renderMyPlayer(player: ClientMatchSpeedPlayer | null)
+  {
+    if (player) {
+      this.drawCircle(player.mousePos.x, player.mousePos.y, 10);
+    }
+  }
 
   renderCard(c: ClientCard)
   {
@@ -200,6 +207,7 @@ export class Screen{
         c.rect.sy,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
         c.rect.sw,	// 描画先領域の大きさ
         c.rect.sh);	// 描画先領域の大きさ
+      this.drawRect(c.touchRect); //for debug
     }
     this.context.restore();
   }
@@ -233,6 +241,15 @@ export class Screen{
     this.context.moveTo(st.x, st.y);
     this.context.lineTo(ed.x, ed.y);
     this.context.stroke();
+  }
+  drawRect(rect: ImgRect) {
+    this.context.strokeStyle = 'blue';
+    this.context.strokeRect(rect.sx, rect.sy, rect.sw, rect.sh);
+  }
+  drawCircle(cx: number, cy: number, radius: number) {
+    this.context.beginPath();
+    this.context.arc(cx, cy, radius, 0, 2 * Math.PI);
+    this.context.stroke()        
   }
 
   //for debug
@@ -303,8 +320,10 @@ export class Screen{
     // 表示サイズとキャンバスの実サイズの比率を求める
     const scaleWidth = tgt.clientWidth / tgt.width;
     const scaleHeight = tgt.clientHeight / tgt.height;
+    const scale = Math.min(scaleWidth, scaleHeight);
+    const rectsize = Math.min(rect.width, rect.height);
     // キャンバス座標
-    return { x: viewX / scaleWidth, y: viewY / scaleHeight };
+    return { x: (viewX - (rect.width - rectsize) / 2) / scale, y: (viewY - (rect.height - rectsize) / 2) / scale };
   }
 
   callbackMousedown(e: MouseEvent) {

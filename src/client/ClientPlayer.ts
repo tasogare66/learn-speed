@@ -18,6 +18,7 @@ export class ClientCard extends Card {
   }
   rect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
   baseRect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
+  touchRect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
   index: number;
   setBasePos(px: number, py: number) {
     this.baseRect.sx = px;
@@ -26,6 +27,7 @@ export class ClientCard extends Card {
   setCurPos(px: number, py: number) {
     this.rect.sx = px;
     this.rect.sy = py;
+    this.touchRect = this.rect;
   }
   resetCurPos() {
     this.setCurPos(this.baseRect.sx, this.baseRect.sy);
@@ -35,7 +37,7 @@ export class ClientCard extends Card {
     this.resetCurPos();
   }
   pointInRect(px: number, py: number): boolean {
-    return Util.pointInRect(this.rect, px, py);
+    return Util.pointInRect(this.touchRect, px, py);
   }
 }
 
@@ -173,6 +175,9 @@ export class ClientMatchSpeed {
   }
   getSecondaryPlayer() : ClientMatchSpeedPlayer | null {
     return this.dspPlayers[1];
+  }
+  getMyPlayer() : ClientMatchSpeedPlayer | null {
+    return this.myPlayer;
   }
   isPlaying(): boolean {
     return (this.myPlayer !== null);
