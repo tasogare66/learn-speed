@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 import { SharedSettings } from '../cmn/SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { Assets } from './Assets';
-import { Vec2f, PlayACard, ImgRect } from '../cmn/SerializeData';
+import { Vec2f, PlayACard, ImgRect, MatchState } from '../cmn/SerializeData';
 import { ClientRoom, ClientMatchSpeedPlayer, ClientCard } from './ClientPlayer';
 
 export class Screen{
@@ -29,6 +29,7 @@ export class Screen{
   assets: Assets;
   room = new ClientRoom();
   iProcessingTimeNanoSec = 0;
+  debugDisp: boolean = false;
 
   //socketの初期化
   initSocket(){
@@ -94,7 +95,7 @@ export class Screen{
     }
     this.context.restore();
 
-    //this.renderDebug();
+    if (this.debugDisp) this.renderDebug();
   }
 
   renderField()
@@ -123,6 +124,28 @@ export class Screen{
     this.renderMatchSpeed();
   }
 
+  private renderMatchTime(matchtm: number) {
+    this.context.save();
+    {
+      this.context.font = RenderingSettings.PROCESSINGTIME_FONT;
+      this.context.fillStyle = RenderingSettings.PROCESSINGTIME_COLOR;
+      this.context.fillText((matchtm).toFixed(9) + ' [s]',
+        this.canvas.width - 30 * 10, 80);
+    }
+    this.context.restore();
+  }
+
+  private renderMiscTime(misctm: number) {
+    this.context.save();
+    {
+      this.context.font = RenderingSettings.PROCESSINGTIME_FONT;
+      this.context.fillStyle = RenderingSettings.PROCESSINGTIME_COLOR;
+      this.context.fillText((misctm).toFixed(9) + ' [s]',
+        this.canvas.width/2, this.canvas.height/2);
+    }
+    this.context.restore();
+  }
+
   renderMatchSpeed()
   {
     const match = this.room.match;
@@ -132,6 +155,16 @@ export class Screen{
 
     this.renderLayout();
     this.renderPlayers();
+
+    this.renderMatchTime(match.matchTime);
+    switch (match.matchState){
+      case MatchState.StartWait:
+      case MatchState.PutLayoutWait:
+        this.renderMiscTime(match.miscTime);
+        break;
+      case MatchState.Finished:
+        break;
+    }
   }
 
   renderLayout()
@@ -207,7 +240,7 @@ export class Screen{
         c.rect.sy,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
         c.rect.sw,	// 描画先領域の大きさ
         c.rect.sh);	// 描画先領域の大きさ
-      this.drawRect(c.touchRect); //for debug
+      if (this.debugDisp) this.drawRect(c.touchRect); //for debug
     }
     this.context.restore();
   }
@@ -224,7 +257,7 @@ export class Screen{
         c.rect.sy,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
         rect.sw,	// 描画先領域の大きさ
         rect.sh);	// 描画先領域の大きさ
-      this.drawRect(c.touchRect); //for debug
+      if (this.debugDisp) this.drawRect(c.touchRect); //for debug
     }
     this.context.restore();
   }

@@ -85,6 +85,14 @@ export class PlayerSerialized {
   }
 }
 
+export enum MatchState {
+  StartWait = 0,
+  Playing,
+  PutLayoutWait,
+  Finished,
+  Max
+}
+
 //client->server
 export class PlayACard {
   handIdx: number = -1;

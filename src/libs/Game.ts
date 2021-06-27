@@ -42,7 +42,7 @@ export class Game{
       //経過時間
       const iTimeCurrent = Date.now(); //msec
       const fDeltaTime = (iTimeCurrent - iTimeLast) * 0.001; //sec
-      iTimeLast = iTimeLast;
+      iTimeLast = iTimeCurrent;
 
       const hrtime = process.hrtime();
       {

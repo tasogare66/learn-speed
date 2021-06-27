@@ -1,8 +1,9 @@
 import assert from 'assert'
 import { Player } from '../libs/Player';
-import { Suit, CardNo, Card, PlayACard } from '../cmn/SerializeData';
+import { Suit, CardNo, Card, MatchState } from '../cmn/SerializeData';
 import { Rng } from '../cmn/Util';
 import { SharedSettings } from '../cmn/SharedSettings';
+import { GameSettings } from './GameSettings';
 
 class LayoutInfo {
   validNums = new Set<CardNo>();
@@ -177,6 +178,9 @@ export class MatchSpeed {
   delReq: boolean = false;
   needDel: boolean = false;
   uuid: string;
+  matchState: MatchState = MatchState.StartWait;
+  matchTime: number = 0; //match経過時間
+  miscTime: number = 0;
   players: MatchSpeedPlayer[] = [];
   layout: LayoutInfo[] = [ new LayoutInfo(), new LayoutInfo() ]; //場札情報
   static readonly PLAYER_NUM = 2;
@@ -205,6 +209,8 @@ export class MatchSpeed {
     });
     assert(this.layout.length == MatchSpeed.PLAYER_NUM);
     assert(this.players.length == MatchSpeed.PLAYER_NUM);
+    // match state
+    this.setStatrWaitState();
   }
 
   //誰かカード出せる?
@@ -249,17 +255,66 @@ export class MatchSpeed {
 
   update(fDeltaTime: number) {
     if (!this.delReq) {
-      if (!this.canPlayACardAnyPlayer()) {
-        //出せるカードないので場札更新
-        this.putLayout();
-      }
-      this.updatePlayers();
-      //勝ち判定
-      if (this.checkFinished()) {
-        this.deleteRequest(); //FIXME:終わりへ   
-      }
+      this.pudateMatch(fDeltaTime);
     } else {
       this.needDel = true;
+    }
+  }
+
+  private setMistTime(v: number){
+    this.miscTime = v;
+  }
+  private updMiscTime(fDeltaTime: number) {
+    this.miscTime -= fDeltaTime;
+    return (this.miscTime <= 0);
+  }
+  private setStatrWaitState() {
+    this.setMistTime(GameSettings.START_WAIT_SEC);
+    this.matchState = MatchState.StartWait;
+  }
+  private setPutLayoutWaitState() {
+    this.setMistTime(GameSettings.PUT_LAYOUT_WAIT_SEC);
+    this.matchState = MatchState.PutLayoutWait;
+  }
+  private setPlayingState() {
+    this.setMistTime(0);
+    this.matchState = MatchState.Playing;
+  }
+  private setFinishState() {
+    this.setMistTime(GameSettings.FINISHD_WAIT_SEC);
+    this.matchState = MatchState.Finished;
+  }
+  private pudateMatch(fDeltaTime: number) {
+    switch (this.matchState) {
+      case MatchState.StartWait:
+        if(this.updMiscTime(fDeltaTime)) {
+          this.putLayout(); //場札だして開始
+          this.setPlayingState();
+        }
+        break;
+      case MatchState.PutLayoutWait:
+        if(this.updMiscTime(fDeltaTime)) {
+          this.putLayout(); //出せるカードないので場札更新
+          this.setPlayingState();
+        }
+        break;
+      case MatchState.Playing:
+        this.matchTime += fDeltaTime; //match時間更新
+        this.updatePlayers();
+        //勝ち判定
+        if (this.checkFinished()) {
+          this.setFinishState();
+        } else if (!this.canPlayACardAnyPlayer()) {
+          this.setPutLayoutWaitState(); //場札更新へ
+        }
+        break;
+      case MatchState.Finished:
+        if (this.updMiscTime(fDeltaTime)) {
+          this.deleteRequest(); //終わりへ
+        }
+        break;
+      default:
+        break;
     }
   }
 
@@ -276,6 +331,9 @@ export class MatchSpeed {
     return Object.assign(
       {
         uuid: this.uuid,
+        matchState: this.matchState,
+        matchTime: this.matchTime,
+        miscTime: this.miscTime,
         players: this.players,
         layout: this.layout
       }

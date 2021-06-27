@@ -1,5 +1,6 @@
+import { json } from 'express';
 import { Socket } from 'socket.io-client';
-import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f } from '../cmn/SerializeData';
+import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
 import { Util } from '../cmn/Util';
 import { clientSocket } from './client';
@@ -131,11 +132,17 @@ export class ClientMatchSpeedPlayer {
 
 export class ClientMatchSpeed {
   uuid: string = "";
+  matchState: MatchState = MatchState.StartWait;
+  matchTime: number = 0;
+  miscTime: number = 0;
   players: ClientMatchSpeedPlayer[] = [];
   layout: ClientCard[] = [];
   fromJSON(jsonObj: any) {
     if (!jsonObj) return this;
     this.uuid = jsonObj.uuid;
+    this.matchState = jsonObj.matchState;
+    this.matchTime = jsonObj.matchTime;
+    this.miscTime = jsonObj.miscTime;
     //players
     this.players.length = jsonObj.players.length;
     for (let i = 0; i < this.players.length; ++i) {
