@@ -1,6 +1,7 @@
 'use strict';
 
 import { io, Socket } from 'socket.io-client';
+import $ from 'jquery';
 import { Screen } from './Screen';
 
 const socket: Socket = io();
@@ -19,6 +20,11 @@ window.addEventListener('beforeunload', function (e) {
 });
 
 document.addEventListener('keydown', (e) => { screen.callbackKeydown(e); });
+document.getElementById('start-button')?.addEventListener('click', (e) => {
+  const objConfig = { nickName: $('#nickname').val() };
+  socket.emit('enter-the-game', objConfig);
+  $('#start-screen').hide();
+});
 canvas.addEventListener('mousedown', (e) => { screen.callbackMousedown(e); });
 canvas.addEventListener('mouseup', (e) => { screen.callbackMouseup(e); });
 canvas.addEventListener('mousemove', (e) => { screen.callbackMousemove(e); });

@@ -43,7 +43,7 @@ export class Screen{
       () => {
         console.log('connect : socket.id = %s', this.socket.id);
         // サーバーに'enter-the-game'を送信
-        this.socket.emit('enter-the-game');
+        //this.socket.emit('enter-the-game');
       });
 
     // サーバーからの状態通知に対する処理
@@ -123,6 +123,16 @@ export class Screen{
   renderRoom()
   {
     this.renderMatchSpeed();
+  }
+
+  private renderNickName(name:string) {
+    this.context.save();
+    {
+      this.context.font = RenderingSettings.PROCESSINGTIME_FONT;
+      this.context.fillStyle = RenderingSettings.PROCESSINGTIME_COLOR;
+      this.context.fillText(name, this.canvas.width - 30 * 10, 1000);
+    }
+    this.context.restore();
   }
 
   private renderMatchTime(matchtm: number) {
@@ -206,6 +216,8 @@ export class Screen{
     if (!player) return;
     const h1 = player?.hand!;
     if (h1) {
+      //nickName
+      this.renderNickName(player.player.nickName);
       //deck
       if (player.hasDeck()) {
         const dc = player.decCard;

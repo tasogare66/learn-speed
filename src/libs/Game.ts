@@ -19,7 +19,7 @@ export class Game{
       socket.on('enter-the-game',
         (objConfig) => {
           console.log('enter-the-game : socket.id=%s', socket.id);
-          player = room.createPlayer(socket.id, socket.id);//objConfig.strNickName);
+          player = room.createPlayer(socket.id, objConfig.nickName);
         }
       );
 
