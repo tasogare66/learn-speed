@@ -29,6 +29,7 @@ export class Screen{
   assets: Assets;
   room = new ClientRoom();
   iProcessingTimeNanoSec = 0;
+  touchId: number = 0;
   debugDisp: boolean = false;
 
   //socketの初期化
@@ -371,5 +372,28 @@ export class Screen{
   callbackMousemove(e: MouseEvent) {
     const pos = Screen.getCanvasPosition(this.canvas, e.clientX, e.clientY);
     this.room.match.callbackMousemove(pos.x, pos.y);
+  }
+  callbackTouchstart(e: TouchEvent) {
+    for (const touch of e.changedTouches) {
+      this.touchId = touch.identifier; //最後だけ
+      const pos = Screen.getCanvasPosition(this.canvas, touch.pageX, touch.pageY);
+      this.room.match.callbackMousedown(pos.x, pos.y);
+    }
+  }
+  callbackTouchend(e: TouchEvent) {
+    for (const touch of e.changedTouches) {
+      if (this.touchId === touch.identifier) {
+        const pos = Screen.getCanvasPosition(this.canvas, touch.pageX, touch.pageY);
+        this.room.match.callbackMouseup(pos.x, pos.y);
+      }
+    }
+  }
+  callbackTouchmove(e: TouchEvent) {
+    for (const touch of e.changedTouches) {
+      if (this.touchId === touch.identifier) {
+        const pos = Screen.getCanvasPosition(this.canvas, touch.pageX, touch.pageY);
+        this.room.match.callbackMousemove(pos.x, pos.y);
+      }
+    }
   }
 }

@@ -22,6 +22,9 @@ document.addEventListener('keydown', (e) => { screen.callbackKeydown(e); });
 canvas.addEventListener('mousedown', (e) => { screen.callbackMousedown(e); });
 canvas.addEventListener('mouseup', (e) => { screen.callbackMouseup(e); });
 canvas.addEventListener('mousemove', (e) => { screen.callbackMousemove(e); });
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); screen.callbackTouchstart(e); });
+canvas.addEventListener('touchmove', (e) => { e.preventDefault(); screen.callbackTouchmove(e); });
+canvas.addEventListener('touchend', (e) => { e.preventDefault(); screen.callbackTouchend(e); });
 
 export function clientSocket() : Socket {
   return socket;

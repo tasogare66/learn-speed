@@ -103,6 +103,7 @@ export class ClientMatchSpeedPlayer {
   hasDeck(): boolean { return (this.deckLen > 0); }
 
   callbackMousedown(posx: number, posy: number) {
+    this.clearDragCard();
     //dec判定
     if (this.hasDeck() && this.decCard.pointInRect(posx, posy)) {
       const d = new PlayACard();
