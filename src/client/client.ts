@@ -23,7 +23,7 @@ document.addEventListener('keydown', (e) => { screen.callbackKeydown(e); });
 document.getElementById('start-button')?.addEventListener('click', (e) => {
   const objConfig = { nickName: $('#nickname').val() };
   socket.emit('enter-the-game', objConfig);
-  $('#start-screen').hide();
+  startScreenDisp(false);
 });
 canvas.addEventListener('mousedown', (e) => { screen.callbackMousedown(e); });
 canvas.addEventListener('mouseup', (e) => { screen.callbackMouseup(e); });
@@ -34,4 +34,12 @@ canvas.addEventListener('touchend', (e) => { e.preventDefault(); screen.callback
 
 export function clientSocket() : Socket {
   return socket;
+}
+
+export function startScreenDisp(flag:boolean){
+  if (flag) {
+    $('#start-screen').show();
+  } else {
+    $('#start-screen').hide();
+  }
 }

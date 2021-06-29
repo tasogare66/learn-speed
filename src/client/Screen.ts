@@ -4,6 +4,13 @@ import { RenderingSettings } from './RenderingSettings';
 import { Assets } from './Assets';
 import { Vec2f, PlayACard, ImgRect, MatchState } from '../cmn/SerializeData';
 import { ClientRoom, ClientMatchSpeedPlayer, ClientCard } from './ClientPlayer';
+import { startScreenDisp } from './client';
+
+interface DspTime {
+  min: number;
+  sec: number;
+  msec: number;
+}
 
 export class Screen{
   constructor(socket: Socket, canvas: HTMLCanvasElement) {
@@ -44,6 +51,7 @@ export class Screen{
         console.log('connect : socket.id = %s', this.socket.id);
         // サーバーに'enter-the-game'を送信
         //this.socket.emit('enter-the-game');
+        startScreenDisp(true);
       });
 
     // サーバーからの状態通知に対する処理
@@ -138,21 +146,50 @@ export class Screen{
   private renderMatchTime(matchtm: number) {
     this.context.save();
     {
-      this.context.font = RenderingSettings.PROCESSINGTIME_FONT;
-      this.context.fillStyle = RenderingSettings.PROCESSINGTIME_COLOR;
-      this.context.fillText((matchtm).toFixed(9) + ' [s]',
-        this.canvas.width - 30 * 10, 80);
+      this.context.font = RenderingSettings.MISCNUM_S_FONT;
+      this.context.fillStyle = RenderingSettings.MISCNUM_COLOR;
+      const txt = Screen.createElapsedTimeText(Screen.calcSec2DspTime(matchtm));
+      const w = this.context.measureText(txt).width;
+      const h = parseInt(this.context.font);
+      this.context.fillText(txt, (this.canvas.width - w) / 2, 80);
     }
     this.context.restore();
   }
 
-  private renderMiscTime(misctm: number) {
+  static calcSec2DspTime(insec: number): DspTime {
+    const result: DspTime = { min: 0, sec: 0, msec: 0 };
+    const inmsec = insec * 1000;
+    result.min = Math.floor(inmsec / 60000);
+    if (result.min>=100) {
+      result.min = 99;
+      result.sec = 59;
+      result.msec = 999;
+      return result;
+    }
+    result.sec = Math.floor(inmsec % 60000 / 1000);
+    result.msec = Math.floor(inmsec % 1000);
+    return result;
+  }
+  static createMiscTimeText(dsptm: DspTime): string {
+    const s = ('0' + dsptm.sec).slice(-2);
+    const ms = ('00' + dsptm.msec).slice(-3);
+    return s + ':' + ms;
+  }
+  static createElapsedTimeText(dsptm: DspTime): string {
+    const m = ('0' + dsptm.min).slice(-2);
+    const s = ('0' + dsptm.sec).slice(-2);
+    const ms = ('00' + dsptm.msec).slice(-3);
+    return m + ':' + s + ':' + ms;
+  }
+ 
+  private renderMiscTime(txt: string) {
     this.context.save();
     {
-      this.context.font = RenderingSettings.PROCESSINGTIME_FONT;
-      this.context.fillStyle = RenderingSettings.PROCESSINGTIME_COLOR;
-      this.context.fillText((misctm).toFixed(9) + ' [s]',
-        this.canvas.width/2, this.canvas.height/2);
+      this.context.font = RenderingSettings.MISCNUM_FONT;
+      this.context.fillStyle = RenderingSettings.MISCNUM_COLOR;
+      const w = this.context.measureText(txt).width;
+      const h = parseInt(this.context.font);
+      this.context.fillText(txt, (this.canvas.width - w) / 2, (this.canvas.height + h) / 2);
     }
     this.context.restore();
   }
@@ -171,7 +208,8 @@ export class Screen{
     switch (match.matchState){
       case MatchState.StartWait:
       case MatchState.PutLayoutWait:
-        this.renderMiscTime(match.miscTime);
+        const t = Screen.calcSec2DspTime(match.miscTime);
+        this.renderMiscTime(Screen.createMiscTimeText(t));
         break;
       case MatchState.Finished:
         break;
@@ -221,7 +259,7 @@ export class Screen{
       //deck
       if (player.hasDeck()) {
         const dc = player.decCard;
-        this.renderCardBack(dc);
+        this.renderDec(dc, player.deckLen);
       }
       //手札描画
       h1.forEach((c, index) => {
@@ -254,6 +292,19 @@ export class Screen{
         c.rect.sw,	// 描画先領域の大きさ
         c.rect.sh);	// 描画先領域の大きさ
       if (this.debugDisp) this.drawRect(c.touchRect); //for debug
+    }
+    this.context.restore();
+  }
+
+  private renderDec(c: ClientCard, deckLen:number)
+  {
+    this.renderCardBack(c);
+
+    this.context.save();
+    {
+      this.context.font = RenderingSettings.PROCESSINGTIME_FONT;
+      this.context.fillStyle = RenderingSettings.PROCESSINGTIME_COLOR;
+      this.context.fillText(deckLen.toFixed(), this.canvas.width - 30 * 3, 880);
     }
     this.context.restore();
   }
