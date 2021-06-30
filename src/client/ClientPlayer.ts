@@ -238,6 +238,11 @@ export class ClientMatchSpeed {
   callbackMousemove(posx: number, posy: number) {
     if (this.myPlayer) this.myPlayer.callbackMousemove(posx, posy);
   }
+  callbackMouseout() {
+    if (this.myPlayer) {
+      this.myPlayer.clearDragCard();
+    }
+  }
 }
 
 export class ClientRoom {

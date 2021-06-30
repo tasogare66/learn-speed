@@ -436,6 +436,9 @@ export class Screen{
     const pos = Screen.getCanvasPosition(this.canvas, e.clientX, e.clientY);
     this.room.match.callbackMousemove(pos.x, pos.y);
   }
+  callbackMouseout(e: MouseEvent) {
+    this.room.match.callbackMouseout();
+  }
   callbackTouchstart(e: TouchEvent) {
     for (const touch of e.changedTouches) {
       this.touchId = touch.identifier; //最後だけ
