@@ -133,12 +133,14 @@ export class Screen{
     this.renderMatchSpeed();
   }
 
-  private renderNickName(name:string) {
+  private renderNickName(name: string, isFlip: boolean) {
     this.context.save();
     {
-      this.context.font = RenderingSettings.PROCESSINGTIME_FONT;
-      this.context.fillStyle = RenderingSettings.PROCESSINGTIME_COLOR;
-      this.context.fillText(name, this.canvas.width - 30 * 10, 1000);
+      this.context.font = RenderingSettings.CARDNUM_FONT;
+      this.context.fillStyle = RenderingSettings.CARDNUM_COLOR;
+      this.context.translate(8 + this.context.measureText(name).width / 2, 910);
+      if (isFlip) this.context.rotate(Math.PI);
+      this.fillTextCenter(name,0,0);
     }
     this.context.restore();
   }
@@ -271,28 +273,28 @@ export class Screen{
       this.context.translate(this.canvas.width/2, this.canvas.height/2);
       this.context.rotate(Math.PI);
       this.context.translate(-this.canvas.width/2, -this.canvas.height/2);
-      this.renderPlayer(this.room.match.getSecondaryPlayer());
+      this.renderPlayer(this.room.match.getSecondaryPlayer(), true);
     }
     this.context.restore();
 
     this.context.save();
     {
-      this.renderPlayer(this.room.match.getPrimaryPlayer());
+      this.renderPlayer(this.room.match.getPrimaryPlayer(), false);
       this.renderMyPlayer(this.room.match.getMyPlayer());
     }
     this.context.restore();
   }
-  renderPlayer(player: ClientMatchSpeedPlayer | null)
+  renderPlayer(player: ClientMatchSpeedPlayer | null, isFlip: boolean)
   {
     if (!player) return;
     const h1 = player?.hand!;
     if (h1) {
       //nickName
-      this.renderNickName(player.player.nickName);
+      this.renderNickName(player.player.nickName, isFlip);
       //deck
       if (player.hasDeck()) {
         const dc = player.decCard;
-        this.renderDec(dc, player.deckLen);
+        this.renderDec(dc, player.deckLen, isFlip);
       }
       //手札描画
       h1.forEach((c, index) => {
@@ -329,15 +331,19 @@ export class Screen{
     this.context.restore();
   }
 
-  private renderDec(c: ClientCard, deckLen:number)
+  private renderDec(c: ClientCard, deckLen: number, isFlip: boolean)
   {
     this.renderCardBack(c);
 
     this.context.save();
     {
-      this.context.font = RenderingSettings.PROCESSINGTIME_FONT;
-      this.context.fillStyle = RenderingSettings.PROCESSINGTIME_COLOR;
-      this.context.fillText(deckLen.toFixed(), this.canvas.width - 30 * 3, 880);
+      this.context.font = RenderingSettings.CARDNUM_FONT;
+      this.context.fillStyle = RenderingSettings.CARDNUM_COLOR;
+      const px = c.rect.sx + RenderingSettings.CARD_WIDTH / 2;
+      const py = c.rect.sy + RenderingSettings.CARD_HEIGHT;
+      this.context.translate(px, py);
+      if (isFlip) this.context.rotate(Math.PI);
+      this.fillTextCenter(deckLen.toFixed(), 0, 0);//c.rect.sx + RenderingSettings.CARD_WIDTH / 2, c.rect.sy + RenderingSettings.CARD_HEIGHT);
     }
     this.context.restore();
   }

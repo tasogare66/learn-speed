@@ -14,6 +14,8 @@ export class RenderingSettings {
   // card
   static get CARD_WIDTH() { return 140; }
   static get CARD_HEIGHT() { return 190; }
+  static get CARDNUM_FONT() { return '48px bold monospace'; }
+  static get CARDNUM_COLOR() { return 'rgba(17, 17, 77)'; }
 
   // time
   static get MISCNUM_FONT() { return '120px bold monospace'; }
