@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 import { SharedSettings } from '../cmn/SharedSettings';
 import { RenderingSettings } from './RenderingSettings';
 import { Assets } from './Assets';
-import { Vec2f, PlayACard, ImgRect, MatchState } from '../cmn/SerializeData';
+import { Vec2f, PlayACard, ImgRect, MatchState, ResultState } from '../cmn/SerializeData';
 import { ClientRoom, ClientMatchSpeedPlayer, ClientCard } from './ClientPlayer';
 import { startScreenDisp } from './client';
 
@@ -143,6 +143,13 @@ export class Screen{
     this.context.restore();
   }
 
+  private fillTextCenter(txt: string, x: number, y: number) {
+    const metrics = this.context.measureText(txt);
+    const w = metrics.width;
+    const h = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    this.context.fillText(txt, x - w / 2, y + h / 2);
+  }
+
   private renderMatchTime(matchtm: number) {
     this.context.save();
     {
@@ -193,6 +200,31 @@ export class Screen{
     }
     this.context.restore();
   }
+  private isPrimaryPlayerWin() {
+    const is_primary0 = (this.room.match.getPrimaryPlayer()?.index === 0);
+    if (this.room.match.resultState === ResultState.P0Win && is_primary0) return true;
+    if (this.room.match.resultState === ResultState.P1Win && !is_primary0) return true;
+    return false;
+  }
+  private renderResult() {
+    this.context.save();
+    {
+      this.context.font = RenderingSettings.RESULT_FONT;
+
+      this.room.match.getPrimaryPlayer()?.index
+      if (this.room.match.resultState === ResultState.Draw) {
+        this.context.fillStyle = RenderingSettings.RESULT_LOSE_COLOR;
+        this.fillTextCenter('Draw', this.canvas.width / 2, this.canvas.height / 2);
+      } else if (this.isPrimaryPlayerWin()) {
+        this.context.fillStyle = RenderingSettings.RESULT_WIN_COLOR;
+        this.fillTextCenter('You Win', this.canvas.width / 2, this.canvas.height / 2);
+      } else {
+        this.context.fillStyle = RenderingSettings.RESULT_LOSE_COLOR;
+        this.fillTextCenter('You Lose', this.canvas.width / 2, this.canvas.height / 2);
+      }
+    }
+    this.context.restore();
+  }
 
   renderMatchSpeed()
   {
@@ -212,6 +244,7 @@ export class Screen{
         this.renderMiscTime(Screen.createMiscTimeText(t));
         break;
       case MatchState.Finished:
+        this.renderResult();
         break;
     }
   }

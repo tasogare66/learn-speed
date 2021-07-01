@@ -19,4 +19,9 @@ export class RenderingSettings {
   static get MISCNUM_FONT() { return '120px bold monospace'; }
   static get MISCNUM_S_FONT() { return '64px bold monospace'; }
   static get MISCNUM_COLOR() { return 'rgba(153, 44, 110)'; }
+
+  // result
+  static get RESULT_FONT() { return '180px bold monospace'; }
+  static get RESULT_WIN_COLOR() { return 'rgba(255, 215, 0)'; }
+  static get RESULT_LOSE_COLOR() { return 'rgba(100, 149, 237)'; }
 }

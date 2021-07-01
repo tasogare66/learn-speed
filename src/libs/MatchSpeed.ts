@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { Player } from '../libs/Player';
-import { Suit, CardNo, Card, MatchState } from '../cmn/SerializeData';
+import { Suit, CardNo, Card, MatchState, ResultState } from '../cmn/SerializeData';
 import { Rng } from '../cmn/Util';
 import { SharedSettings } from '../cmn/SharedSettings';
 import { GameSettings } from './GameSettings';
@@ -181,6 +181,7 @@ export class MatchSpeed {
   matchState: MatchState = MatchState.StartWait;
   matchTime: number = 0; //match経過時間
   miscTime: number = 0;
+  resultState: ResultState = ResultState.Invalid;
   players: MatchSpeedPlayer[] = [];
   layout: LayoutInfo[] = [ new LayoutInfo(), new LayoutInfo() ]; //場札情報
   static readonly PLAYER_NUM = 2;
@@ -242,15 +243,21 @@ export class MatchSpeed {
     }
   }
 
-  checkFinished() {
-    let isFinished = false;
+  private checkFinished() : ResultState{
     let isDraw = true;
-    for (const p of this.players) {
-      const pisf = p.isFinished();
-      isFinished ||= pisf;
+    let result = ResultState.Invalid;
+    for (let i = 0; i < this.players.length; ++i) {
+      const pisf = this.players[i].isFinished();
+      if (pisf) {
+        if (i==0) result = ResultState.P0Win;
+        else result = ResultState.P1Win;
+      }
       isDraw &&= pisf;
     }
-    return isFinished;
+    if (isDraw) {
+      result = ResultState.Draw;
+    }
+    return result;
   }
 
   update(fDeltaTime: number) {
@@ -261,7 +268,7 @@ export class MatchSpeed {
     }
   }
 
-  private setMistTime(v: number){
+  private setMiscTime(v: number){
     this.miscTime = v;
   }
   private updMiscTime(fDeltaTime: number) {
@@ -269,19 +276,19 @@ export class MatchSpeed {
     return (this.miscTime <= 0);
   }
   private setStatrWaitState() {
-    this.setMistTime(GameSettings.START_WAIT_SEC);
+    this.setMiscTime(GameSettings.START_WAIT_SEC);
     this.matchState = MatchState.StartWait;
   }
   private setPutLayoutWaitState() {
-    this.setMistTime(GameSettings.PUT_LAYOUT_WAIT_SEC);
+    this.setMiscTime(GameSettings.PUT_LAYOUT_WAIT_SEC);
     this.matchState = MatchState.PutLayoutWait;
   }
   private setPlayingState() {
-    this.setMistTime(0);
+    this.setMiscTime(0);
     this.matchState = MatchState.Playing;
   }
   private setFinishState() {
-    this.setMistTime(GameSettings.FINISHD_WAIT_SEC);
+    this.setMiscTime(GameSettings.FINISHD_WAIT_SEC);
     this.matchState = MatchState.Finished;
   }
   private pudateMatch(fDeltaTime: number) {
@@ -302,7 +309,8 @@ export class MatchSpeed {
         this.matchTime += fDeltaTime; //match時間更新
         this.updatePlayers();
         //勝ち判定
-        if (this.checkFinished()) {
+        this.resultState = this.checkFinished();
+        if (this.resultState != ResultState.Invalid) {
           this.setFinishState();
         } else if (!this.canPlayACardAnyPlayer()) {
           this.setPutLayoutWaitState(); //場札更新へ
@@ -332,6 +340,7 @@ export class MatchSpeed {
       {
         uuid: this.uuid,
         matchState: this.matchState,
+        resultState: this.resultState,
         matchTime: this.matchTime,
         miscTime: this.miscTime,
         players: this.players,

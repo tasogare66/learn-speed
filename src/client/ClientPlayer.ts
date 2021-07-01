@@ -1,6 +1,6 @@
 import { json } from 'express';
 import { Socket } from 'socket.io-client';
-import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState } from '../cmn/SerializeData';
+import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
 import { Util } from '../cmn/Util';
 import { clientSocket } from './client';
@@ -63,7 +63,8 @@ export class ClientMatchSpeedPlayer {
   player = new PlayerSerialized();
   hand: ClientCard[] = [];
   deckLen: number = 0;
-  constructor() {
+  constructor(index: number) {
+    this.index = index;
     this.decCard.setTouchOffset(30,30,10,10);
     this.decCard.setBothPos(SharedSettings.CANVAS_HEIGHT-RenderingSettings.CARD_WIDTH-20, SharedSettings.CANVAS_HEIGHT * 3 / 4 - RenderingSettings.CARD_HEIGHT / 2);
   }
@@ -91,6 +92,7 @@ export class ClientMatchSpeedPlayer {
     });
   }
 
+  index: number;
   decCard: ClientCard = new ClientCard(-1);
   dragCard: ClientCard | null = null;
   dragOffset: Vec2f = { x: 0, y: 0 };
@@ -134,6 +136,7 @@ export class ClientMatchSpeedPlayer {
 export class ClientMatchSpeed {
   uuid: string = "";
   matchState: MatchState = MatchState.StartWait;
+  resultState: ResultState = ResultState.Invalid;
   matchTime: number = 0;
   miscTime: number = 0;
   players: ClientMatchSpeedPlayer[] = [];
@@ -142,12 +145,13 @@ export class ClientMatchSpeed {
     if (!jsonObj) return this;
     this.uuid = jsonObj.uuid;
     this.matchState = jsonObj.matchState;
+    this.resultState = jsonObj.resultState;
     this.matchTime = jsonObj.matchTime;
     this.miscTime = jsonObj.miscTime;
     //players
     this.players.length = jsonObj.players.length;
     for (let i = 0; i < this.players.length; ++i) {
-      if (!this.players[i]) this.players[i] = new ClientMatchSpeedPlayer();
+      if (!this.players[i]) this.players[i] = new ClientMatchSpeedPlayer(i);
       this.players[i].fromJSON(jsonObj.players[i]);
     }
     //layout

@@ -93,6 +93,13 @@ export enum MatchState {
   Max
 }
 
+export enum ResultState {
+  Invalid = 0, //未決
+  P0Win,
+  P1Win,
+  Draw,
+}
+
 //client->server
 export class PlayACard {
   handIdx: number = -1;
