@@ -131,3 +131,25 @@ export class PlayACard {
     return this;
   }
 }
+
+export class DragInfo {
+  handIdx: number = -1;
+  x: number = Number.MIN_SAFE_INTEGER;
+  y: number = Number.MIN_SAFE_INTEGER;
+  isValid() {
+    if (this.handIdx < 0) return false;
+    if (this.x === Number.MIN_SAFE_INTEGER) return false;
+    return true;
+  }
+  toJSON() {
+    return Object.assign({
+      handIdx: this.handIdx,
+      x: this.x,
+      y: this.y,
+    });
+  }
+  fromJSON(jsonObj: any) {
+    Object.assign(this, jsonObj);
+    return this;
+  }
+}

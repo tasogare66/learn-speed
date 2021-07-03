@@ -1,4 +1,4 @@
-import { PlayACard } from "../cmn/SerializeData";
+import { DragInfo, PlayACard } from "../cmn/SerializeData";
 
 export class Player {
   constructor(strSocketID: string, nickName: string) {
@@ -10,6 +10,7 @@ export class Player {
 
   isDuringTheGame: boolean = false;
   playACards: PlayACard[] = [];
+  dragInfo: DragInfo | null = null;
 
   matchStart() {
     this.isDuringTheGame = true;
@@ -25,7 +26,11 @@ export class Player {
     this.playACards.length = 0;
   }
 
-  update(fDeltaTime: number) {
+  setDragInfo(di: DragInfo) {
+    this.dragInfo = di;
+  }
+  clearDragInfo() {
+    this.dragInfo = null;
   }
 
   toJSON() {

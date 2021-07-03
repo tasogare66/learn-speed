@@ -1,14 +1,17 @@
 import { json } from 'express';
 import { Socket } from 'socket.io-client';
-import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState } from '../cmn/SerializeData';
+import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState, DragInfo } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
-import { Util } from '../cmn/Util';
+import { assert, Util } from '../cmn/Util';
 import { clientSocket } from './client';
 import { RenderingSettings } from './RenderingSettings';
 
 export class ClientSocket {
   static emitPlayACard(socket: Socket, pac: PlayACard) {
     socket.emit('play-a-card', pac);
+  }
+  static emitDragInfo(socket: Socket, di: DragInfo) {
+    socket.emit('drag-info', di);
   }
 }
 
@@ -63,6 +66,7 @@ export class ClientMatchSpeedPlayer {
   player = new PlayerSerialized();
   hand: ClientCard[] = [];
   deckLen: number = 0;
+  netDragInfo: DragInfo = new DragInfo();
   constructor(index: number) {
     this.index = index;
     this.decCard.setTouchOffset(30,30,10,10);
@@ -82,17 +86,38 @@ export class ClientMatchSpeedPlayer {
       dsthnd.setBasePos(st + inc * i, SharedSettings.CANVAS_HEIGHT * 3 / 4 - RenderingSettings.CARD_HEIGHT / 2);
     }
     this.deckLen = jsonObj.deckLen;
+    this.netDragInfo.fromJSON(jsonObj.dragInfo);
   }
   isSamePlayer(idstr: string) {
     return (this.player.strSocketID === idstr);
   }
+  isHandValid(idx: number): boolean {
+    if (idx>=0 && idx < this.hand.length) {
+      return !this.hand[idx].isInvalid();
+    }
+    return false;
+  }
   update() {
+    //通信playerのdragCard設定
+    if (this.isNetPlayer()) {
+      this.clearDragCard(); //毎フレーム,一旦clear
+      if (this.netDragInfo.isValid()) {
+        const hidx = this.netDragInfo.handIdx;
+        if (this.isHandValid(hidx)) {
+          this.dragCard = this.hand[hidx];
+          this.dragCard.rect.sx = this.netDragInfo.x;
+          this.dragCard.rect.sy = this.netDragInfo.y;
+        }
+      }
+    }
+
     this.hand.forEach((c, index) => {
       if (c && c !== this.dragCard) c.resetCurPos();
     });
   }
 
   index: number;
+  isClientPlayer: boolean = false; //自playerのみ
   decCard: ClientCard = new ClientCard(-1);
   dragCard: ClientCard | null = null;
   dragOffset: Vec2f = { x: 0, y: 0 };
@@ -103,6 +128,7 @@ export class ClientMatchSpeedPlayer {
     this.dragOffset = { x: 0, y: 0 };
   }
   hasDeck(): boolean { return (this.deckLen > 0); }
+  isNetPlayer() { return !this.isClientPlayer; }
 
   callbackMousedown(posx: number, posy: number) {
     this.clearDragCard();
@@ -171,6 +197,9 @@ export class ClientMatchSpeed {
     //clear
     this.myPlayer = null;
     this.dspPlayers.length = 0;
+    for (const p of this.players) {
+      p.isClientPlayer = false;
+    }
     //decide myPlayer
     if (this.players.length == SharedSettings.SPD_PLAYER_NUM) {
       if (this.players[1].isSamePlayer(idstr)) {
@@ -184,6 +213,7 @@ export class ClientMatchSpeed {
       if (this.players[0].isSamePlayer(idstr)) {
         this.myPlayer = this.players[0];
       }
+      if (this.myPlayer) this.myPlayer.isClientPlayer = true;
     }
     //update layout
     {
@@ -202,6 +232,17 @@ export class ClientMatchSpeed {
     //update players
     for(const p of this.dspPlayers){
       p.update();
+    }
+    //emitDragInfo
+    if (this.myPlayer) {
+      const dcard = this.myPlayer.dragCard;
+      if (dcard) {
+        const d = new DragInfo();
+        d.handIdx = dcard.index;
+        d.x = dcard.rect.sx;
+        d.y = dcard.rect.sy;
+        ClientSocket.emitDragInfo(clientSocket(), d);
+      }
     }
   }
 

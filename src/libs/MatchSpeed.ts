@@ -142,6 +142,7 @@ class MatchSpeedPlayer {
         hand: this.hand,
         deckLen: this.deck.length,
         player: this.player,
+        dragInfo: this.player.dragInfo,
       }
     );
   }

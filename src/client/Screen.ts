@@ -297,11 +297,12 @@ export class Screen{
         this.renderDec(dc, player.deckLen, isFlip);
       }
       //手札描画
+      const dragCard = player.dragCard;
       h1.forEach((c, index) => {
-        if (c !== player.dragCard) this.renderCard(c);
+        if (c !== dragCard) this.renderCard(c);
       });
-      if (player.dragCard) {
-        this.renderCard(player.dragCard);
+      if (dragCard) {
+        this.renderCard(dragCard);
       }
     }
   }
