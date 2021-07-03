@@ -2,7 +2,7 @@ import { json } from 'express';
 import { Socket } from 'socket.io-client';
 import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState, DragInfo } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
-import { assert, Util } from '../cmn/Util';
+import { Util } from '../cmn/Util';
 import { clientSocket } from './client';
 import { RenderingSettings } from './RenderingSettings';
 
@@ -205,6 +205,9 @@ export class ClientMatchSpeed {
   isSameMatch(uuid: string): boolean {
     return (this.uuid === uuid);
   }
+  isMatchStatePlaying(){
+    return (this.matchState == MatchState.Playing);
+  }
 
   myPlayer: ClientMatchSpeedPlayer | null = null;
   dspPlayers: ClientMatchSpeedPlayer[] = [];
@@ -271,10 +274,14 @@ export class ClientMatchSpeed {
   }
 
   callbackMousedown(posx: number, posy: number) {
-    if (this.myPlayer) this.myPlayer.callbackMousedown(posx, posy);
+    if (this.myPlayer && this.isMatchStatePlaying()) {
+      this.myPlayer.callbackMousedown(posx, posy);
+    } else {
+      this.callbackMouseout();
+    }
   }
   callbackMouseup(posx: number, posy: number) {
-    if (this.myPlayer) {
+    if (this.myPlayer && this.isMatchStatePlaying()) {
       const dragc = this.myPlayer.getDragCard();
       if (!dragc) return; //dragしてない場合return
       for (let i=0;i< this.layout.length;++i){
@@ -289,10 +296,16 @@ export class ClientMatchSpeed {
         }
       }
       this.myPlayer.clearDragCard();
+    } else {
+      this.callbackMouseout();
     }
   }
   callbackMousemove(posx: number, posy: number) {
-    if (this.myPlayer) this.myPlayer.callbackMousemove(posx, posy);
+    if (this.myPlayer && this.isMatchStatePlaying()) {
+      this.myPlayer.callbackMousemove(posx, posy);
+    } else {
+      this.callbackMouseout();
+    }
   }
   callbackMouseout() {
     if (this.myPlayer) {
