@@ -5,7 +5,7 @@ import { Assets } from './Assets';
 import { Vec2f, PlayACard, ImgRect, MatchState, ResultState } from '../cmn/SerializeData';
 import { ClientRoom, ClientMatchSpeedPlayer, ClientCard } from './ClientPlayer';
 import { startScreenDisp } from './client';
-import { ClientEmote } from './ClientEmotes';
+import { ClientEmote, ClientPlayerEmotes } from './ClientEmotes';
 
 interface DspTime {
   min: number;
@@ -39,6 +39,7 @@ export class Screen{
   iProcessingTimeNanoSec = 0;
   touchId: number = 0;
   debugDisp: boolean = false;
+  iTimeLast = 0;
 
   //socketの初期化
   initSocket(){
@@ -71,7 +72,21 @@ export class Screen{
     requestAnimationFrame((iTimeCurrent)=>{
       this.animate(iTimeCurrent);
     });
+    this.regularUpdate(iTimeCurrent);
     this.render(iTimeCurrent);
+  }
+
+  regularUpdate(iTimeCurrent: number)
+  {
+    const deltaTime = (iTimeCurrent - this.iTimeLast) * 0.001; //sec
+    this.iTimeLast = iTimeCurrent;
+
+    const match = this.room.match;
+    if (!match) {
+      return;
+    }
+
+    match.regularUpdate(deltaTime);
   }
 
   render(iTimeCurrent: number)
@@ -236,7 +251,7 @@ export class Screen{
       return;
     }
 
-    this.renderEmotes();
+    this.renderEmoteButtons();
     this.renderLayout();
     this.renderPlayers();
 
@@ -253,7 +268,7 @@ export class Screen{
     }
   }
 
-  private renderEmotes()
+  private renderEmoteButtons()
   {
     //emote button
     if (!this.room.match.getMyPlayer()) return;
@@ -264,6 +279,12 @@ export class Screen{
       }
     }
     this.context.restore();
+  }
+  private renderPlayerEmotes(cpe: ClientPlayerEmotes)
+  {
+    for (const e of cpe.emotes) {
+      this.renderClientEmotes(e);
+    }
   }
   private renderClientEmotes(e:ClientEmote)
   {
@@ -320,8 +341,6 @@ export class Screen{
     if (!player) return;
     const h1 = player?.hand!;
     if (h1) {
-      //nickName
-      this.renderNickName(player.player.nickName, isFlip);
       //deck
       if (player.hasDeck()) {
         const dc = player.decCard;
@@ -335,6 +354,10 @@ export class Screen{
       if (dragCard) {
         this.renderCard(dragCard);
       }
+      //emote
+      this.renderPlayerEmotes(player.emotes);
+      //nickName
+      this.renderNickName(player.player.nickName, isFlip);
     }
   }
   renderMyPlayer(player: ClientMatchSpeedPlayer | null)
@@ -418,7 +441,7 @@ export class Screen{
   drawCircle(cx: number, cy: number, radius: number) {
     this.context.beginPath();
     this.context.arc(cx, cy, radius, 0, 2 * Math.PI);
-    this.context.stroke()        
+    this.context.stroke();
   }
 
   //for debug

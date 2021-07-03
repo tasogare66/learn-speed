@@ -270,7 +270,7 @@ export class MatchSpeed {
 
   update(fDeltaTime: number) {
     if (!this.delReq) {
-      this.pudateMatch(fDeltaTime);
+      this.upudateMatch(fDeltaTime);
     } else {
       this.needDel = true;
     }
@@ -299,7 +299,7 @@ export class MatchSpeed {
     this.setMiscTime(GameSettings.FINISHD_WAIT_SEC);
     this.matchState = MatchState.Finished;
   }
-  private pudateMatch(fDeltaTime: number) {
+  private upudateMatch(fDeltaTime: number) {
     switch (this.matchState) {
       case MatchState.StartWait:
         if(this.updMiscTime(fDeltaTime)) {

@@ -41,6 +41,10 @@ export class Game{
         if (!player || !player.isDuringTheGame) return;
         player.setDragInfo(new DragInfo().fromJSON(di));
       });
+ 
+      socket.on('emote', (et)=>{
+        if (!player || !player.isDuringTheGame) return;
+      });
     });
 
     setInterval(() => {

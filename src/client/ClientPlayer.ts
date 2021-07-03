@@ -3,7 +3,7 @@ import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchS
 import { SharedSettings } from "../cmn/SharedSettings";
 import { Util } from '../cmn/Util';
 import { clientSocket } from './client';
-import { ClientEmote } from './ClientEmotes';
+import { ClientEmote, ClientPlayerEmotes } from './ClientEmotes';
 import { RenderingSettings } from './RenderingSettings';
 
 export class ClientSocket {
@@ -12,6 +12,9 @@ export class ClientSocket {
   }
   static emitDragInfo(socket: Socket, di: DragInfo) {
     socket.emit('drag-info', di);
+  }
+  static emitEmote(socket:Socket, et: EmoteType) {
+    socket.emit('emote', et);
   }
 }
 
@@ -116,6 +119,10 @@ export class ClientMatchSpeedPlayer {
     });
   }
 
+  regularUpdate(fDeltaTime: number) {
+    this.emotes.regularUpdate(fDeltaTime);
+  }
+
   index: number;
   isClientPlayer: boolean = false; //自playerのみ
   decCard: ClientCard = new ClientCard(-1);
@@ -123,6 +130,7 @@ export class ClientMatchSpeedPlayer {
   dragOffset: Vec2f = { x: 0, y: 0 };
   mousePos: Vec2f = { x: 0, y: 0 };
   dragInfoHist: DragInfo | null = null; //一つ前の送信DragInfo
+  emotes: ClientPlayerEmotes = new ClientPlayerEmotes();
   getDragCard() { return this.dragCard; }
   clearDragCard() {
     this.dragCard = null;
@@ -269,6 +277,12 @@ export class ClientMatchSpeed {
     }
   }
 
+  regularUpdate(fDeltaTime: number) {
+    for (const p of this.players) {
+      p.regularUpdate(fDeltaTime);
+    }
+  }
+
   getPrimaryPlayer(): ClientMatchSpeedPlayer | null {
     return this.dspPlayers[0];
   }
@@ -287,6 +301,15 @@ export class ClientMatchSpeed {
       this.myPlayer.callbackMousedown(posx, posy);
     } else {
       this.callbackMouseout();
+    }
+    if (this.myPlayer) {
+      for (const eb of this.emoteButtons) {
+        if (eb.pointInRect(posx,posy)) {
+          this.myPlayer.emotes.push(eb.type);
+          ClientSocket.emitEmote(clientSocket(), eb.type);
+          break;
+        }
+      }
     }
   }
   callbackMouseup(posx: number, posy: number) {
