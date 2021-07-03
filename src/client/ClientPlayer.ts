@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io-client';
-import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState, DragInfo } from '../cmn/SerializeData';
+import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState, DragInfo, EmoteType } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
 import { Util } from '../cmn/Util';
 import { clientSocket } from './client';
@@ -185,7 +185,7 @@ export class ClientMatchSpeed {
   layout: ClientCard[] = [];
   constructor(){
     for (let i = 0; i < SharedSettings.EMOTE_BTN_NUM; ++i) {
-      const b = new ClientEmote(i);
+      const b = new ClientEmote(EmoteType.Start+i);
       b.setPos(10+i*48, 1024-48);
       this.emoteButtons.push(b);
     }

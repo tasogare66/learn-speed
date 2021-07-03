@@ -1,4 +1,5 @@
-import { ImgRect, Suit, CardNo, Card } from "../cmn/SerializeData";
+import { ImgRect, Suit, CardNo, Card, EmoteType } from "../cmn/SerializeData";
+import { assert } from "../cmn/Util";
 
 export interface ICardRectHash {
   [details: string]: ImgRect[];
@@ -16,6 +17,7 @@ export class Assets {
     this.imgCardBack = new Image();
     this.imgCardBack.src = '../images/playingCardBacks.png';
     this.cardUV();
+    this.emoteUV();
     //emotes
     this.imgEmotes = new Image();
     this.imgEmotes.src = '../images/vector_style6.png';
@@ -85,6 +87,40 @@ export class Assets {
       { sh: 190, sw: 140, sy: 570, sx: 140 },
     ];
   }
+  emoteUV(){
+    this.rectEmotesTbl = [
+      { sh: 38, sw: 32, sy: 152, sx: 64 },
+      { sh: 38, sw: 32, sy: 114, sx: 160 },
+      { sh: 38, sw: 32, sy: 76, sx: 160 },
+      { sh: 38, sw: 32, sy: 38, sx: 160 },
+      { sh: 38, sw: 32, sy: 0, sx: 160 },
+      { sh: 38, sw: 32, sy: 152, sx: 128 },
+      { sh: 38, sw: 32, sy: 114, sx: 128 },
+      { sh: 38, sw: 32, sy: 76, sx: 128 },
+      { sh: 38, sw: 32, sy: 38, sx: 128 },
+      { sh: 38, sw: 32, sy: 0, sx: 128 },
+      { sh: 38, sw: 32, sy: 152, sx: 96 },
+      { sh: 38, sw: 32, sy: 114, sx: 96 },
+      { sh: 38, sw: 32, sy: 76, sx: 96 },
+      { sh: 38, sw: 32, sy: 38, sx: 96 },
+      { sh: 38, sw: 32, sy: 0, sx: 96 },
+      { sh: 38, sw: 32, sy: 152, sx: 160 },
+      { sh: 38, sw: 32, sy: 114, sx: 64 },
+      { sh: 38, sw: 32, sy: 76, sx: 64 },
+      { sh: 38, sw: 32, sy: 38, sx: 64 },
+      { sh: 38, sw: 32, sy: 0, sx: 64 },
+      { sh: 38, sw: 32, sy: 152, sx: 32 },
+      { sh: 38, sw: 32, sy: 114, sx: 32 },
+      { sh: 38, sw: 32, sy: 76, sx: 32 },
+      { sh: 38, sw: 32, sy: 38, sx: 32 },
+      { sh: 38, sw: 32, sy: 0, sx: 32 },
+      { sh: 38, sw: 32, sy: 152, sx: 0 },
+      { sh: 38, sw: 32, sy: 114, sx: 0 },
+      { sh: 38, sw: 32, sy: 76, sx: 0 },
+      { sh: 38, sw: 32, sy: 38, sx: 0 },
+      { sh: 38, sw: 32, sy: 0, sx: 0 },
+    ];
+  }
   getCardImgRect(card: Card): ImgRect {
     if (card.suit===Suit.Joker) return this.rectCardsTbl[card.suit][0];
     return this.rectCardsTbl[card.suit][card.no];
@@ -93,8 +129,9 @@ export class Assets {
     return { sh: 190, sw: 140, sy: 570, sx: 280 };
   }
 
-  getEmoteImgRect(): ImgRect{
-    return { sh: 38, sw: 32, sy: 114, sx: 160 };
+  getEmoteImgRect(et: EmoteType): ImgRect {
+    assert(et>=EmoteType.Start && et < this.rectEmotesTbl.length);
+    return this.rectEmotesTbl[et];
   }
 
   imageField: HTMLImageElement;
@@ -103,4 +140,5 @@ export class Assets {
   imgCardBack: HTMLImageElement;
   rectCardsTbl: ICardRectHash = {};
   imgEmotes: HTMLImageElement;
+  rectEmotesTbl: ImgRect[] = [];
 }

@@ -105,7 +105,9 @@ export enum ResultState {
 
 export enum EmoteType {
   Invalid = 0,
-  Alert,
+  Start,
+
+  Alert=Start,
   Anger,
   Bars,
   Cash,

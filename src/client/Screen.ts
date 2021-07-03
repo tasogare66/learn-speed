@@ -269,7 +269,7 @@ export class Screen{
   {
     this.context.save();
     {
-      const rect = this.assets.getEmoteImgRect();
+      const rect = this.assets.getEmoteImgRect(e.type);
       this.context.drawImage(this.assets.imgEmotes,
         rect.sx, rect.sy,	// 描画元画像の右上座標
         rect.sw, rect.sh,	// 描画元画像の大きさ
