@@ -1,9 +1,9 @@
-import { json } from 'express';
 import { Socket } from 'socket.io-client';
 import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState, DragInfo } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
 import { Util } from '../cmn/Util';
 import { clientSocket } from './client';
+import { ClientEmote } from './ClientEmotes';
 import { RenderingSettings } from './RenderingSettings';
 
 export class ClientSocket {
@@ -183,6 +183,13 @@ export class ClientMatchSpeed {
   miscTime: number = 0;
   players: ClientMatchSpeedPlayer[] = [];
   layout: ClientCard[] = [];
+  constructor(){
+    for (let i = 0; i < SharedSettings.EMOTE_BTN_NUM; ++i) {
+      const b = new ClientEmote(i);
+      b.setPos(10+i*48, 1024-48);
+      this.emoteButtons.push(b);
+    }
+  }
   fromJSON(jsonObj: any) {
     if (!jsonObj) return this;
     this.uuid = jsonObj.uuid;
@@ -212,6 +219,7 @@ export class ClientMatchSpeed {
 
   myPlayer: ClientMatchSpeedPlayer | null = null;
   dspPlayers: ClientMatchSpeedPlayer[] = [];
+  emoteButtons: ClientEmote[] = [];
   update(idstr: string) {
     //clear
     this.myPlayer = null;

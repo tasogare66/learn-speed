@@ -16,6 +16,9 @@ export class Assets {
     this.imgCardBack = new Image();
     this.imgCardBack.src = '../images/playingCardBacks.png';
     this.cardUV();
+    //emotes
+    this.imgEmotes = new Image();
+    this.imgEmotes.src = '../images/vector_style6.png';
   }
   cardUV(){
     this.rectCardsTbl[Suit.Spade] = [
@@ -90,9 +93,14 @@ export class Assets {
     return { sh: 190, sw: 140, sy: 570, sx: 280 };
   }
 
+  getEmoteImgRect(): ImgRect{
+    return { sh: 38, sw: 32, sy: 114, sx: 160 };
+  }
+
   imageField: HTMLImageElement;
   rectFieldInFieldImage: ImgRect;
   imgCards: HTMLImageElement;
   imgCardBack: HTMLImageElement;
   rectCardsTbl: ICardRectHash = {};
+  imgEmotes: HTMLImageElement;
 }

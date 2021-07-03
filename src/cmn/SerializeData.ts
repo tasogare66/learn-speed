@@ -103,6 +103,40 @@ export enum ResultState {
   Draw,
 }
 
+export enum EmoteType {
+  Invalid = 0,
+  Alert,
+  Anger,
+  Bars,
+  Cash,
+  Circle,
+  Cloud,
+  Cross,
+  Dots1,
+  Dots2,
+  Dots3,
+  Drop,
+  Drops,
+  Exclamation,
+  Exclamations,
+  FaceAngry,
+  FaceHappy,
+  FaceSad,
+  Heart,
+  HeartBroken,
+  Hearts,
+  Idea,
+  Laugh,
+  Music,
+  Question,
+  Sleep,
+  Sleeps,
+  Star,
+  Stars,
+  Swirl,
+  Max
+}
+
 //client->server
 export class PlayACard {
   handIdx: number = -1;

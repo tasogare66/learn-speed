@@ -5,6 +5,7 @@ import { Assets } from './Assets';
 import { Vec2f, PlayACard, ImgRect, MatchState, ResultState } from '../cmn/SerializeData';
 import { ClientRoom, ClientMatchSpeedPlayer, ClientCard } from './ClientPlayer';
 import { startScreenDisp } from './client';
+import { ClientEmote } from './ClientEmotes';
 
 interface DspTime {
   min: number;
@@ -235,6 +236,7 @@ export class Screen{
       return;
     }
 
+    this.renderEmotes();
     this.renderLayout();
     this.renderPlayers();
 
@@ -249,6 +251,35 @@ export class Screen{
         this.renderResult();
         break;
     }
+  }
+
+  private renderEmotes()
+  {
+    //emote button
+    if (!this.room.match.getMyPlayer()) return;
+    this.context.save();
+    {
+      for (const eb of this.room.match.emoteButtons) {
+        this.renderClientEmotes(eb);
+      }
+    }
+    this.context.restore();
+  }
+  private renderClientEmotes(e:ClientEmote)
+  {
+    this.context.save();
+    {
+      const rect = this.assets.getEmoteImgRect();
+      this.context.drawImage(this.assets.imgEmotes,
+        rect.sx, rect.sy,	// 描画元画像の右上座標
+        rect.sw, rect.sh,	// 描画元画像の大きさ
+        e.rect.sx,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        e.rect.sy,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        e.rect.sw,	// 描画先領域の大きさ
+        e.rect.sh);	// 描画先領域の大きさ
+      if (this.debugDisp) this.drawRect(e.touchRect); //for debug
+    }
+    this.context.restore();
   }
 
   renderLayout()

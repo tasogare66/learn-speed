@@ -4,4 +4,5 @@ export class SharedSettings {
 
   static get SPD_PLAYER_NUM() { return 2; } //2人で遊ぶ
   static get SPD_HAND_CARD_NUM() { return 4; } //手札の数
+  static get EMOTE_BTN_NUM() { return 10; }
 }
