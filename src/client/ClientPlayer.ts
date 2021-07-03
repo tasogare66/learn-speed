@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io-client';
-import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState, DragInfo, EmoteType } from '../cmn/SerializeData';
+import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState, DragInfo, EmoteType, EmoteUtil } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
 import { Util } from '../cmn/Util';
 import { clientSocket } from './client';
@@ -70,6 +70,7 @@ export class ClientMatchSpeedPlayer {
   hand: ClientCard[] = [];
   deckLen: number = 0;
   netDragInfo: DragInfo = new DragInfo();
+  emoteType: EmoteType = EmoteType.Invalid;
   constructor(index: number) {
     this.index = index;
     this.decCard.setTouchOffset(30,30,10,10);
@@ -90,6 +91,7 @@ export class ClientMatchSpeedPlayer {
     }
     this.deckLen = jsonObj.deckLen;
     this.netDragInfo.fromJSON(jsonObj.dragInfo);
+    this.emoteType = jsonObj.emoteType;
   }
   isSamePlayer(idstr: string) {
     return (this.player.strSocketID === idstr);
@@ -101,8 +103,13 @@ export class ClientMatchSpeedPlayer {
     return false;
   }
   update() {
-    //通信playerのdragCard設定
     if (this.isNetPlayer()) {
+      //emote
+      if (EmoteUtil.isValidEmoteType(this.emoteType)) {
+        this.emotes.push(this.emoteType);
+        this.emoteType = EmoteType.Invalid; //clear
+      }
+      //通信playerのdragCard設定
       this.clearDragCard(); //毎フレーム,一旦clear
       if (this.netDragInfo.isValid()) {
         const hidx = this.netDragInfo.handIdx;

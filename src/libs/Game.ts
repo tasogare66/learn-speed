@@ -44,6 +44,7 @@ export class Game{
  
       socket.on('emote', (et)=>{
         if (!player || !player.isDuringTheGame) return;
+        player.setEmoteType(et);
       });
     });
 
@@ -66,6 +67,7 @@ export class Game{
         room,
         iNanosecDiff
       );
+      room.postUpdate();
     }, 1000 / GameSettings.FRAMERATE); //1000(ms)/FRAMERATE(30)
   }
 }

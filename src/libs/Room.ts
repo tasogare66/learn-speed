@@ -27,6 +27,12 @@ export class Room {
     }
   }
 
+  postUpdate(){
+    if (this.matchSpeed){
+      this.matchSpeed.postUpdate();
+    }
+  }
+
   createPlayer(strSocketID: string, nickName: string): Player {
     const pl = new Player(strSocketID, nickName);
     this.playersLst.push(pl);

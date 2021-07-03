@@ -143,6 +143,7 @@ class MatchSpeedPlayer {
         deckLen: this.deck.length,
         player: this.player,
         dragInfo: this.player.dragInfo,
+        emoteType: this.player.emoteType,
       }
     );
   }
@@ -273,6 +274,12 @@ export class MatchSpeed {
       this.upudateMatch(fDeltaTime);
     } else {
       this.needDel = true;
+    }
+  }
+
+  postUpdate() {
+    for (const p of this.players) {
+      p.player.clearEmoteType(); //送信したら消す
     }
   }
 

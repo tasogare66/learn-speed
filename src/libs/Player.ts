@@ -1,4 +1,4 @@
-import { DragInfo, PlayACard } from "../cmn/SerializeData";
+import { DragInfo, EmoteType, EmoteUtil, PlayACard } from "../cmn/SerializeData";
 
 export class Player {
   constructor(strSocketID: string, nickName: string) {
@@ -11,6 +11,7 @@ export class Player {
   isDuringTheGame: boolean = false;
   playACards: PlayACard[] = [];
   dragInfo: DragInfo | null = null;
+  emoteType: EmoteType = EmoteType.Invalid;
 
   matchStart() {
     this.isDuringTheGame = true;
@@ -31,6 +32,15 @@ export class Player {
   }
   clearDragInfo() {
     this.dragInfo = null;
+  }
+
+  setEmoteType(et: EmoteType) {
+    if (EmoteUtil.isDefinedEmoteType(et)){
+      this.emoteType = et;
+    }
+  }
+  clearEmoteType() {
+    this.emoteType = EmoteType.Invalid;
   }
 
   toJSON() {

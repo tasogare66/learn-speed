@@ -139,6 +139,15 @@ export enum EmoteType {
   Max
 }
 
+export class EmoteUtil {
+  static isValidEmoteType(et:EmoteType):boolean{
+    return (et >= EmoteType.Start && et < EmoteType.Max);
+  }
+  static isDefinedEmoteType(et:EmoteType): boolean {
+    return (et === EmoteType.Invalid || EmoteUtil.isValidEmoteType(et));
+  }
+}
+
 //client->server
 export class PlayACard {
   handIdx: number = -1;
