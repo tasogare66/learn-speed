@@ -122,6 +122,7 @@ export class ClientMatchSpeedPlayer {
   dragCard: ClientCard | null = null;
   dragOffset: Vec2f = { x: 0, y: 0 };
   mousePos: Vec2f = { x: 0, y: 0 };
+  dragInfoHist: DragInfo | null = null; //一つ前の送信DragInfo
   getDragCard() { return this.dragCard; }
   clearDragCard() {
     this.dragCard = null;
@@ -129,6 +130,20 @@ export class ClientMatchSpeedPlayer {
   }
   hasDeck(): boolean { return (this.deckLen > 0); }
   isNetPlayer() { return !this.isClientPlayer; }
+
+  emitDragInfo() {
+    const d = new DragInfo();
+    const dcard = this.dragCard;
+    if (dcard) {
+      d.handIdx = dcard.index;
+      d.x = dcard.rect.sx;
+      d.y = dcard.rect.sy;
+    }
+    if (!this.dragInfoHist || !this.dragInfoHist.isSame(d)) { //更新ある場合のみ
+      ClientSocket.emitDragInfo(clientSocket(), d);
+      this.dragInfoHist = d;
+    }
+  }
 
   callbackMousedown(posx: number, posy: number) {
     this.clearDragCard();
@@ -201,7 +216,7 @@ export class ClientMatchSpeed {
       p.isClientPlayer = false;
     }
     //decide myPlayer
-    if (this.players.length == SharedSettings.SPD_PLAYER_NUM) {
+    if (this.players.length === SharedSettings.SPD_PLAYER_NUM) {
       if (this.players[1].isSamePlayer(idstr)) {
         this.myPlayer = this.players[1];
         this.dspPlayers[0] = this.players[1];
@@ -220,29 +235,25 @@ export class ClientMatchSpeed {
       const tmpx = 60; //中心からのずれ
       const st = SharedSettings.CANVAS_WIDTH / 2 - tmpx - RenderingSettings.CARD_WIDTH;
       const inc = RenderingSettings.CARD_WIDTH + 2*tmpx;
-      this.layout.forEach((c,index) => {
+      const pp = this.getPrimaryPlayer();
+      let starndardIndex: number = pp ? pp.index+1 : 1;
+      const margin = 80;
+      for (let i = 0; i < this.layout.length; ++i) {
+        const index = (i + starndardIndex) % this.layout.length;
+        const c = this.layout[i];
         if (c) {
-          const margin = 80;
           if (index===0) c.setTouchOffset(60,60,60+margin,60);
           else c.setTouchOffset(60,60,60,60+margin);
           c.setBothPos(st + inc * index, (SharedSettings.CANVAS_HEIGHT - RenderingSettings.CARD_HEIGHT) / 2);
         }
-      });
+      }
     }
     //update players
     for(const p of this.dspPlayers){
       p.update();
     }
-    //emitDragInfo
     if (this.myPlayer) {
-      const dcard = this.myPlayer.dragCard;
-      if (dcard) {
-        const d = new DragInfo();
-        d.handIdx = dcard.index;
-        d.x = dcard.rect.sx;
-        d.y = dcard.rect.sy;
-        ClientSocket.emitDragInfo(clientSocket(), d);
-      }
+      this.myPlayer.emitDragInfo();
     }
   }
 

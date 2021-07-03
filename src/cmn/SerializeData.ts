@@ -141,6 +141,12 @@ export class DragInfo {
     if (this.x === Number.MIN_SAFE_INTEGER) return false;
     return true;
   }
+  isSame(info: DragInfo): boolean {
+    if (this.handIdx !== info.handIdx) return false;
+    if (this.x !== info.x) return false;
+    if (this.y !== info.y) return false;
+    return true;
+  }
   toJSON() {
     return Object.assign({
       handIdx: this.handIdx,
