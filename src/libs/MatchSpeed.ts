@@ -204,6 +204,13 @@ export class MatchSpeed {
     for(let p of this.players){
       addJocker(p);
     }
+    //id振る,連番
+    let cardid = 0;
+    for(const p of this.players){
+      for (const c of p.deck){
+        c.id = cardid++;
+      }
+    }
     this.players.forEach((mp)=>{
       shuffleCards(mp.deck);
       //set hand

@@ -103,7 +103,7 @@ export class ClientMatchSpeedPlayer {
       this.clearDragCard(); //毎フレーム,一旦clear
       if (this.netDragInfo.isValid()) {
         const hidx = this.netDragInfo.handIdx;
-        if (this.isHandValid(hidx)) {
+        if (this.isHandValid(hidx) && this.hand[hidx].id === this.netDragInfo.id) { //同カードの場合
           this.dragCard = this.hand[hidx];
           this.dragCard.rect.sx = this.netDragInfo.x;
           this.dragCard.rect.sy = this.netDragInfo.y;
@@ -136,6 +136,7 @@ export class ClientMatchSpeedPlayer {
     const dcard = this.dragCard;
     if (dcard) {
       d.handIdx = dcard.index;
+      d.id = dcard.id;
       d.x = dcard.rect.sx;
       d.y = dcard.rect.sy;
     }

@@ -45,9 +45,11 @@ export class Card {
   constructor(suit: Suit = Suit.None, no: CardNo = CardNo.Max) {
     this.suit = suit;
     this.no = no;
+    this.id = Number.MIN_SAFE_INTEGER;
   }
   suit: Suit;
   no: CardNo;
+  id: number;
   static readonly empty: Card = new Card();
   isInvalid(): boolean {
     return (this.suit === Suit.None);
@@ -66,7 +68,8 @@ export class Card {
     return Object.assign(
       {
         suit: this.suit,
-        no: this.no
+        no: this.no,
+        id: this.id,
       }
     );
   }
@@ -134,15 +137,18 @@ export class PlayACard {
 
 export class DragInfo {
   handIdx: number = -1;
+  id: number = Number.MIN_SAFE_INTEGER;
   x: number = Number.MIN_SAFE_INTEGER;
   y: number = Number.MIN_SAFE_INTEGER;
   isValid() {
     if (this.handIdx < 0) return false;
+    if (this.id < 0) return false;
     if (this.x === Number.MIN_SAFE_INTEGER) return false;
     return true;
   }
   isSame(info: DragInfo): boolean {
     if (this.handIdx !== info.handIdx) return false;
+    if (this.id !== info.id) return false;
     if (this.x !== info.x) return false;
     if (this.y !== info.y) return false;
     return true;
@@ -150,6 +156,7 @@ export class DragInfo {
   toJSON() {
     return Object.assign({
       handIdx: this.handIdx,
+      id: this.id,
       x: this.x,
       y: this.y,
     });
