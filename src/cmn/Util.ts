@@ -18,6 +18,23 @@ export class Util {
     return (left <= px && px <= right
       && top <= py && py <= bottom);
   }
+  //array自体を変更する破壊的
+  static shuffleArrayDestructive<T>(array: T[]) { //destructive method
+    const length = array == null ? 0 : array.length
+    if (!length) {
+      return; //return [];
+    }
+    let index = -1
+    const lastIndex = length - 1;
+    const result = array; //copyArray(array)
+    while (++index < length) {
+      const rand = index + Math.floor(Rng.randf() * (lastIndex - index + 1));
+      const value = result[rand];
+      result[rand] = result[index];
+      result[index] = value;
+    }
+    //return result
+  }
 }
 export class Rng {
   //[0.0-1.0)

@@ -136,7 +136,8 @@ export enum EmoteType {
   Star,
   Stars,
   Swirl,
-  Max
+  Max,
+  Num=Max-Start,
 }
 
 export class EmoteUtil {

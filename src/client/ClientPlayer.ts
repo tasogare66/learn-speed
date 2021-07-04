@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io-client';
 import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState, DragInfo, EmoteType, EmoteUtil } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
-import { Util } from '../cmn/Util';
+import { assert, Util } from '../cmn/Util';
 import { clientSocket } from './client';
 import { ClientEmote, ClientPlayerEmotes } from './ClientEmotes';
 import { RenderingSettings } from './RenderingSettings';
@@ -199,11 +199,20 @@ export class ClientMatchSpeed {
   players: ClientMatchSpeedPlayer[] = [];
   layout: ClientCard[] = [];
   constructor(){
+    //EmoteType全部のせてshuffle
+    let tbl: EmoteType[] = Array(EmoteType.Num);
+    for(let i=0;i<tbl.length;++i){ 
+      tbl[i]=EmoteType.Start+i;
+    }
+    Util.shuffleArrayDestructive(tbl);
+    assert(tbl.length >= SharedSettings.EMOTE_BTN_NUM);
     for (let i = 0; i < SharedSettings.EMOTE_BTN_NUM; ++i) {
-      const b = new ClientEmote(EmoteType.Start+i);
+      const b = new ClientEmote(tbl[i]);
       b.setPos(10+i*48, 1024-48);
       this.emoteButtons.push(b);
     }
+    //sort
+    this.emoteButtons.sort(function(a,b){ return a.type-b.type;});
   }
   fromJSON(jsonObj: any) {
     if (!jsonObj) return this;
