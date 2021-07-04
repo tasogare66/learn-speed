@@ -8,7 +8,7 @@ export class RenderingSettings {
   static get FIELD_LINEWIDTH() { return 5; }
 
   // 処理時間
-  static get PROCESSINGTIME_FONT() { return '30px Bold Arial'; }
+  static get PROCESSINGTIME_FONT() { return '24px Bold Arial'; }
   static get PROCESSINGTIME_COLOR() { return 'black'; }
 
   // card

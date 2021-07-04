@@ -115,8 +115,7 @@ export class Screen{
     {
       this.context.font = RenderingSettings.PROCESSINGTIME_FONT;
       this.context.fillStyle = RenderingSettings.PROCESSINGTIME_COLOR;
-      this.context.fillText((this.iProcessingTimeNanoSec * 1e-9).toFixed(9) + ' [s]',
-        this.canvas.width - 30 * 10, 40);
+      this.context.fillText((this.iProcessingTimeNanoSec * 1e-3).toFixed(6), this.canvas.width - 24 * 6, 24);
     }
     this.context.restore();
 
@@ -411,7 +410,7 @@ export class Screen{
       this.context.font = RenderingSettings.CARDNUM_FONT;
       this.context.fillStyle = RenderingSettings.CARDNUM_COLOR;
       const px = c.rect.sx + RenderingSettings.CARD_WIDTH / 2;
-      const py = c.rect.sy + RenderingSettings.CARD_HEIGHT;
+      const py = c.rect.sy + RenderingSettings.CARD_HEIGHT*4/5;
       this.context.translate(px, py);
       if (isFlip) this.context.rotate(Math.PI);
       this.fillTextCenter(deckLen.toFixed(), 0, 0);//c.rect.sx + RenderingSettings.CARD_WIDTH / 2, c.rect.sy + RenderingSettings.CARD_HEIGHT);
