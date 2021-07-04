@@ -20,7 +20,7 @@ export class RenderingSettings {
   // time
   static get MISCNUM_FONT() { return '120px bold monospace'; }
   static get MISCNUM_S_FONT() { return '64px bold monospace'; }
-  static get MISCNUM_COLOR() { return 'rgba(153, 44, 110)'; }
+  static get MISCNUM_COLOR() { return 'rgba(173, 216, 230)'; }
 
   // result
   static get RESULT_FONT() { return '180px bold monospace'; }
