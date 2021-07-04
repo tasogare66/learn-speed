@@ -28,13 +28,13 @@ export class ClientPlayerEmotes {
   push(et: EmoteType) {
     const emote = new ClientEmote(et);
     emote.rect.sx = 0;
-    emote.rect.sy = 900;
+    emote.rect.sy = 900-20;
     this.emotes.push(emote);
   }
   regularUpdate(fDeltaTime: number) {
     if (this.emotes.length <= 0) return;
     for(const e of this.emotes){
-      e.rect.sx += (fDeltaTime*120);
+      e.rect.sx += (fDeltaTime*180);
     }
     this.emotes = this.emotes.filter(e => {
       return (e.rect.sx < SharedSettings.CANVAS_WIDTH);

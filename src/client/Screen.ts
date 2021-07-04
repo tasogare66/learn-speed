@@ -154,7 +154,7 @@ export class Screen{
     {
       this.context.font = RenderingSettings.CARDNUM_FONT;
       this.context.fillStyle = RenderingSettings.CARDNUM_COLOR;
-      this.context.translate(8 + this.context.measureText(name).width / 2, 910);
+      this.context.translate(8 + this.context.measureText(name).width / 2, 946);
       if (isFlip) this.context.rotate(Math.PI);
       this.fillTextCenter(name,0,0);
     }
@@ -280,27 +280,43 @@ export class Screen{
     }
     this.context.restore();
   }
-  private renderPlayerEmotes(cpe: ClientPlayerEmotes)
+  private renderPlayerEmotes(cpe: ClientPlayerEmotes, isFlip: boolean)
   {
     for (const e of cpe.emotes) {
-      this.renderClientEmotes(e);
+      this.renderClientEmotes(e, 2.0, isFlip);
     }
   }
-  private renderClientEmotes(e:ClientEmote)
+  private renderClientEmotes(e: ClientEmote, scale: number = 1.0, isFlip: boolean = false)
   {
     this.context.save();
     {
+      const w = e.rect.sw * scale;
+      const h = e.rect.sh * scale;
+      const wd2 = w/2;
+      const hd2 = h/2;
+      this.context.translate(e.rect.sx, e.rect.sy);
+      if (isFlip) { //雑
+        this.context.rotate(Math.PI);
+        this.context.translate(wd2, -hd2);
+      } else {
+        this.context.translate(wd2, hd2);
+      }
+
       const rect = this.assets.getEmoteImgRect(e.type);
       this.context.drawImage(this.assets.imgEmotes,
         rect.sx, rect.sy,	// 描画元画像の右上座標
         rect.sw, rect.sh,	// 描画元画像の大きさ
-        e.rect.sx,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
-        e.rect.sy,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
-        e.rect.sw,	// 描画先領域の大きさ
-        e.rect.sh);	// 描画先領域の大きさ
-      if (this.debugDisp) this.drawRect(e.touchRect); //for debug
+        -wd2,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        -hd2,	// 画像先領域の右上座標（領域中心が、原点になるように指定する）
+        w,	// 描画先領域の大きさ
+        h);	// 描画先領域の大きさ
     }
     this.context.restore();
+    if (this.debugDisp){
+      this.context.save();
+      this.drawRect(e.touchRect); //for debug
+      this.context.restore();
+    }
   }
 
   renderLayout()
@@ -355,7 +371,7 @@ export class Screen{
         this.renderCard(dragCard);
       }
       //emote
-      this.renderPlayerEmotes(player.emotes);
+      this.renderPlayerEmotes(player.emotes, isFlip);
       //nickName
       this.renderNickName(player.player.nickName, isFlip);
     }
