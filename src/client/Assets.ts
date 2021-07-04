@@ -20,7 +20,7 @@ export class Assets {
     this.emoteUV();
     //emotes
     this.imgEmotes = new Image();
-    this.imgEmotes.src = '../images/vector_style6.png';
+    this.imgEmotes.src = '../images/vector_style2.png';
   }
   cardUV(){
     this.rectCardsTbl[Suit.Spade] = [
