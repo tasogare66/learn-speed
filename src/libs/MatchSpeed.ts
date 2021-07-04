@@ -92,13 +92,22 @@ class MatchSpeedPlayer {
     return Card.empty; //cardない場合
   }
 
-  //何かカード出せる場合,true
-  canPlayAnyCard(layout: LayoutInfo[]): boolean {
+  //何かカード出せる場合,true,Jockerは含まない
+  canPlayAnyCardIgnoreJocker(layout: LayoutInfo[]): boolean {
     if (this.canDecToHand()) return true; //補充できる場合,true
     for (const lo of layout) {
       for (const c of this.hand) {
+        if (c.isJoker()) continue; //jockerは無視
         if (lo.canPlayACard(c)) return true;
       }
+    }
+    return false;
+  }
+
+  //手札にjockerあるか
+  hasJockerInHand(){
+    for(const c of this.hand){
+      if (c.isJoker()) return true;
     }
     return false;
   }
@@ -207,9 +216,16 @@ export class MatchSpeed {
   }
 
   //誰かカード出せる?
-  canPlayACardAnyPlayer() : boolean {
+  canPlayACardIgnoreJockerAnyPlayer() : boolean {
     for (const p of this.players) {
-      if (p.canPlayAnyCard(this.layout)) return true;
+      if (p.canPlayAnyCardIgnoreJocker(this.layout)) return true;
+    }
+    return false;
+  }
+
+  hasJockerInHandAnyPlayer(): boolean {
+    for (const p of this.players) {
+      if (p.hasJockerInHand()) return true;
     }
     return false;
   }
@@ -282,7 +298,7 @@ export class MatchSpeed {
     this.matchState = MatchState.PutLayoutWait;
   }
   private setPlayingState() {
-    this.setMiscTime(0);
+    this.setMiscTime(GameSettings.JOCKER_WAIT_SEC);
     this.matchState = MatchState.Playing;
   }
   private setFinishState() {
@@ -310,8 +326,16 @@ export class MatchSpeed {
         this.resultState = this.checkFinished();
         if (this.resultState != ResultState.Invalid) {
           this.setFinishState();
-        } else if (!this.canPlayACardAnyPlayer()) {
-          this.setPutLayoutWaitState(); //場札更新へ
+        } else if (!this.canPlayACardIgnoreJockerAnyPlayer()) {
+          if (this.hasJockerInHandAnyPlayer()) {
+            if (this.updMiscTime(fDeltaTime)) {
+              this.setPutLayoutWaitState(); //場札更新へ
+            }
+          } else {
+            this.setPutLayoutWaitState(); //場札更新へ
+          }
+        } else {
+          this.setMiscTime(GameSettings.JOCKER_WAIT_SEC); //jocker待ち時間戻す
         }
         break;
       case MatchState.Finished:
