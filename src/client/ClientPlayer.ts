@@ -2,7 +2,7 @@ import { Socket } from 'socket.io-client';
 import { ImgRect, Suit, CardNo, Card, PlayerSerialized, PlayACard, Vec2f, MatchState, ResultState, DragInfo, EmoteType, EmoteUtil } from '../cmn/SerializeData';
 import { SharedSettings } from "../cmn/SharedSettings";
 import { assert, Util } from '../cmn/Util';
-import { clientSocket } from './client';
+import { clientAssets, clientSocket } from './client';
 import { ClientEmote, ClientPlayerEmotes } from './ClientEmotes';
 import { RenderingSettings } from './RenderingSettings';
 
@@ -69,6 +69,8 @@ export class ClientMatchSpeedPlayer {
   player = new PlayerSerialized();
   hand: ClientCard[] = [];
   deckLen: number = 0;
+  handIdHist: number[] = [];
+  deckLenHist: number = 0;
   netDragInfo: DragInfo = new DragInfo();
   emoteType: EmoteType = EmoteType.Invalid;
   constructor(index: number) {
@@ -102,6 +104,22 @@ export class ClientMatchSpeedPlayer {
     }
     return false;
   }
+
+  updateHnadHist(): boolean {
+    let ret=false;
+    let initial = (this.handIdHist.length <= 0);
+    if (initial) {
+      this.deckLenHist = this.deckLen;
+    }
+    for (let i=0;i<this.hand.length;++i) {
+      if (!initial && this.handIdHist[i] !== this.hand[i].id) {
+        ret = true;
+      }
+      this.handIdHist[i] = this.hand[i].id;
+    }
+    return ret;
+  }
+
   update() {
     if (this.isNetPlayer()) {
       //emote
@@ -124,6 +142,16 @@ export class ClientMatchSpeedPlayer {
     this.hand.forEach((c, index) => {
       if (c && c !== this.dragCard) c.resetCurPos();
     });
+
+    //playSE
+    const slide = this.updateHnadHist();
+    const place = (this.deckLen !== this.deckLenHist);
+    this.deckLenHist = this.deckLen;
+    if (place) {
+      clientAssets().playPlaceSE();
+    } else if (slide) {
+      clientAssets().playSlideSE();
+    }
   }
 
   regularUpdate(fDeltaTime: number) {

@@ -3,6 +3,7 @@
 import { io, Socket } from 'socket.io-client';
 import $ from 'jquery';
 import { Screen } from './Screen';
+import { Assets } from './Assets';
 
 const socket: Socket = io();
 
@@ -33,8 +34,11 @@ canvas.addEventListener('touchstart', (e) => { e.preventDefault(); screen.callba
 canvas.addEventListener('touchmove', (e) => { e.preventDefault(); screen.callbackTouchmove(e); });
 canvas.addEventListener('touchend', (e) => { e.preventDefault(); screen.callbackTouchend(e); });
 
-export function clientSocket() : Socket {
+export function clientSocket(): Socket {
   return socket;
+}
+export function clientAssets(): Assets {
+  return screen.assets;
 }
 
 export function startScreenDisp(flag:boolean){

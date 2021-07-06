@@ -1,5 +1,5 @@
 import { ImgRect, Suit, CardNo, Card, EmoteType } from "../cmn/SerializeData";
-import { assert } from "../cmn/Util";
+import { assert, Rng } from "../cmn/Util";
 
 export interface ICardRectHash {
   [details: string]: ImgRect[];
@@ -21,6 +21,17 @@ export class Assets {
     //emotes
     this.imgEmotes = new Image();
     this.imgEmotes.src = '../images/vector_style2.png';
+    //audios
+    this.sePlace = [
+       new Audio('../audios/cardPlace1.mp3'),
+       new Audio('../audios/cardPlace2.mp3'),
+       new Audio('../audios/cardPlace3.mp3'),
+    ];
+    this.seSlide = [
+      new Audio('../audios/cardSlide1.mp3'),
+      new Audio('../audios/cardSlide2.mp3'),
+      new Audio('../audios/cardSlide3.mp3'),
+   ];
   }
   cardUV(){
     this.rectCardsTbl[Suit.Spade] = [
@@ -134,6 +145,20 @@ export class Assets {
     return this.rectEmotesTbl[et];
   }
 
+  private static playeSEInternal(se: HTMLAudioElement) {
+    if (!se) return;
+    se.currentTime = 0;
+    se.play();
+  }
+  playPlaceSE(){
+    const n = Rng.randiMax(this.sePlace.length-1);
+    Assets.playeSEInternal(this.sePlace[n]);
+  }
+  playSlideSE(){
+    const n = Rng.randiMax(this.seSlide.length-1);
+    Assets.playeSEInternal(this.seSlide[n]);
+  }
+
   imageField: HTMLImageElement;
   rectFieldInFieldImage: ImgRect;
   imgCards: HTMLImageElement;
@@ -141,4 +166,6 @@ export class Assets {
   rectCardsTbl: ICardRectHash = {};
   imgEmotes: HTMLImageElement;
   rectEmotesTbl: ImgRect[] = [];
+  sePlace: HTMLAudioElement[] = [];
+  seSlide: HTMLAudioElement[] = [];
 }
