@@ -35,3 +35,15 @@ npm run dev でサーバーも起動
 
 ## ref
 http://www.cc.kochi-u.ac.jp/~tyamag/jyohou/javascriptcardgame.pdf
+
+## HEROKU
+- heroku login
+- heroku create learn-speed
+
+- git push heroku main
+- heroku ps:scale web=1
+- heroku open
+- heroku logs --tail
+
+local test
+- heroku local web
