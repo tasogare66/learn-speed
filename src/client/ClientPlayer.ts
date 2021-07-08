@@ -35,6 +35,7 @@ export class ClientCard extends Card {
   touchRect: ImgRect = { sx: 0, sy: 0, sw: RenderingSettings.CARD_WIDTH, sh: RenderingSettings.CARD_HEIGHT };
   touchOffset: PositionOffset = { top: 0, bottom: 0, left: 0, right: 0 };
   index: number;
+  playACardCnt = -1;
   setBasePos(px: number, py: number) {
     this.baseRect.sx = px;
     this.baseRect.sy = py;
@@ -69,6 +70,7 @@ export class ClientMatchSpeedPlayer {
   player = new PlayerSerialized();
   hand: ClientCard[] = [];
   deckLen: number = 0;
+  recvPlayACardCnt: number = -1; //server側で処理した値
   handIdHist: number[] = [];
   deckLenHist: number = 0;
   netDragInfo: DragInfo = new DragInfo();
@@ -92,6 +94,7 @@ export class ClientMatchSpeedPlayer {
       dsthnd.setBasePos(st + inc * i, SharedSettings.CANVAS_HEIGHT * 3 / 4 - RenderingSettings.CARD_HEIGHT / 2);
     }
     this.deckLen = jsonObj.deckLen;
+    this.recvPlayACardCnt = jsonObj.playACardCnt;
     this.netDragInfo.fromJSON(jsonObj.dragInfo);
     this.emoteType = jsonObj.emoteType;
   }
@@ -139,9 +142,13 @@ export class ClientMatchSpeedPlayer {
       }
     }
 
-    this.hand.forEach((c, index) => {
-      if (c && c !== this.dragCard) c.resetCurPos();
-    });
+    for (const c of this.hand) {
+      if (c) {
+        if (c===this.dragCard) continue; //drag中
+        if (c.playACardCnt>=0 && c.playACardCnt > this.recvPlayACardCnt) continue; //serverから返答まだ
+        c.resetCurPos();
+      }
+    }
 
     //playSE
     const slide = this.updateHnadHist();
@@ -166,6 +173,7 @@ export class ClientMatchSpeedPlayer {
   mousePos: Vec2f = { x: 0, y: 0 };
   dragInfoHist: DragInfo | null = null; //一つ前の送信DragInfo
   emotes: ClientPlayerEmotes = new ClientPlayerEmotes();
+  playACardCnt: number = 0;
   getDragCard() { return this.dragCard; }
   clearDragCard() {
     this.dragCard = null;
@@ -317,6 +325,7 @@ export class ClientMatchSpeed {
       p.update();
     }
     if (this.myPlayer) {
+      if (!this.isMatchStatePlaying()) this.myPlayer.clearDragCard();
       this.myPlayer.emitDragInfo();
     }
   }
@@ -364,9 +373,11 @@ export class ClientMatchSpeed {
         const loc = this.layout[i];
         if (loc.isInvalid()) continue;
         if (loc.pointInRect(posx, posy)) {
+          dragc.playACardCnt = this.myPlayer.playACardCnt++; //cardに記録しておく
           const d = new PlayACard();
           d.layoutIdx = loc.index;
           d.handIdx= dragc.index;
+          d.counter = dragc.playACardCnt;
           ClientSocket.emitPlayACard(clientSocket(), d);
           break;
         }

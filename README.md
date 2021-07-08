@@ -47,3 +47,5 @@ http://www.cc.kochi-u.ac.jp/~tyamag/jyohou/javascriptcardgame.pdf
 
 local test
 - heroku local web
+
+https://learn-speed.herokuapp.com/

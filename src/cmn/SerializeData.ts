@@ -153,6 +153,7 @@ export class EmoteUtil {
 export class PlayACard {
   handIdx: number = -1;
   layoutIdx: number = -1;
+  counter: number = -1;
   isValidHand() {
     return (this.handIdx >= 0 && this.layoutIdx >= 0);
   }
@@ -172,6 +173,7 @@ export class PlayACard {
       {
         handIdx: this.handIdx,
         layoutIdx: this.layoutIdx,
+        counter: this.counter,
       }
     );
   }

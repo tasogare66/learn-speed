@@ -56,6 +56,7 @@ class MatchSpeedPlayer {
   player: Player;
   deck: Card[] = [];
   hand: Card[] = []; //手札
+  playACardCnt = -1;
   static readonly HAND_CARD_NUM = SharedSettings.SPD_HAND_CARD_NUM;
 
   //カードの補充できる場合,true
@@ -114,6 +115,7 @@ class MatchSpeedPlayer {
 
   update(layout: LayoutInfo[]) {
     for(const pac of this.player.playACards) {
+      this.playACardCnt = Math.max(this.playACardCnt, pac.counter);
       //手札追加
       if (pac.isDecToHand()){
         this.deckToHand(); //1枚手札に
@@ -150,6 +152,7 @@ class MatchSpeedPlayer {
       {
         hand: this.hand,
         deckLen: this.deck.length,
+        playACardCnt: this.playACardCnt,
         player: this.player,
         dragInfo: this.player.dragInfo,
         emoteType: this.player.emoteType,
