@@ -355,7 +355,7 @@ export class ClientMatchSpeed {
     } else {
       this.callbackMouseout();
     }
-    if (this.myPlayer) {
+    if (this.myPlayer && !this.myPlayer.emotes.ignoreInput()) {
       for (const eb of this.emoteButtons) {
         if (eb.pointInRect(posx,posy)) {
           this.myPlayer.emotes.push(eb.type);

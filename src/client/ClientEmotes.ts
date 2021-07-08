@@ -25,13 +25,20 @@ export class ClientEmote {
 
 export class ClientPlayerEmotes {
   emotes: ClientEmote[] = [];
+  inputInterval = -1;
+  static readonly def_inputInterval = 0.3;
+  ignoreInput(): boolean {
+    return (this.inputInterval > 0);
+  }
   push(et: EmoteType) {
+    this.inputInterval = ClientPlayerEmotes.def_inputInterval;
     const emote = new ClientEmote(et);
     emote.rect.sx = 0;
     emote.rect.sy = 900-20;
     this.emotes.push(emote);
   }
   regularUpdate(fDeltaTime: number) {
+    this.inputInterval = Math.max(-1, this.inputInterval-fDeltaTime);
     if (this.emotes.length <= 0) return;
     for(const e of this.emotes){
       e.rect.sx += (fDeltaTime*180);
