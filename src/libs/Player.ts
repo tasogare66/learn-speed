@@ -9,6 +9,7 @@ export class Player {
   nickName: string;
 
   isDuringTheGame: boolean = false;
+  isBot = false;
   playACards: PlayACard[] = [];
   dragInfo: DragInfo | null = null;
   emoteType: EmoteType = EmoteType.Invalid;
@@ -50,5 +51,12 @@ export class Player {
         nickName: this.nickName,
       }
     );
+  }
+}
+
+export class BotPlayer extends Player {
+  constructor() {
+    super('', "BOT1");
+    this.isBot = true;
   }
 }

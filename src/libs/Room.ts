@@ -1,6 +1,6 @@
 import assert from 'assert'
 import socketio from 'socket.io';
-import { Player } from './Player';
+import { Player, BotPlayer } from './Player';
 import { MatchSpeed } from './MatchSpeed';
 import { nanoid } from 'nanoid';
 
@@ -19,6 +19,8 @@ export class Room {
       this.matchSpeed.dest();
       this.matchSpeed = null; //削除
     }
+    //botの出し入れ
+    this.controlBotEntry();
     //match作れたら作る
     this.tryCreateMatchSpeed();
     //match更新
@@ -47,6 +49,39 @@ export class Room {
       this.playersLst.splice(index, 1);
     }
     console.log('deletePlayer,players length:' + this.playersLst.length);
+  }
+
+  private calcBotNum() {
+    let ret=0;
+    for(const p of this.playersLst){
+      if (p.isBot) ++ret;
+    }
+    return ret;
+  }
+  private createBotPlayer() {
+    this.playersLst.push(new BotPlayer());
+  }
+  private deleteOneBotPlayer() {
+    for(const p of this.playersLst){
+      if (p.isBot) {
+        this.deletePlayer(p);
+        return;
+      }
+    }
+  }
+  controlBotEntry() {
+    const botNum = this.calcBotNum();
+    const playerNum = this.playersLst.length - botNum;
+    //playerNum 1の時にbot1 作るだけ
+    if (playerNum !== 1) {
+      if (botNum > 0) this.deleteOneBotPlayer();
+    } else {
+      if (botNum > 1) {
+        this.deleteOneBotPlayer();
+      } else if (botNum === 0) {
+        this.createBotPlayer();
+      }
+    }
   }
 
   tryCreateMatchSpeed() {

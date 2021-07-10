@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { Player } from '../libs/Player';
-import { Suit, CardNo, Card, MatchState, ResultState } from '../cmn/SerializeData';
+import { Suit, CardNo, Card, MatchState, ResultState, PlayACard } from '../cmn/SerializeData';
 import { Rng, Util } from '../cmn/Util';
 import { SharedSettings } from '../cmn/SharedSettings';
 import { GameSettings } from './GameSettings';
@@ -25,8 +25,8 @@ class LayoutInfo {
       if (this.validNums.size > 0) {
         const newset = new Set<CardNo>();
         for (const n of this.validNums) {
-          newset.add(n-1);
-          newset.add(n+1);
+          newset.add(Card.modCardNo(n-1));
+          newset.add(Card.modCardNo(n+1));
         }
         this.validNums = newset;
       }
@@ -105,6 +105,16 @@ class MatchSpeedPlayer {
     return false;
   }
 
+  //手札が何か出せる場合,true
+  canPlayAnyHandCard(layout: LayoutInfo[]): boolean {
+    for (const lo of layout) {
+      for (const c of this.hand) {
+        if (lo.canPlayACard(c)) return true;
+      }
+    }
+    return false;
+  }
+
   //手札にjockerあるか
   hasJockerInHand(){
     for(const c of this.hand){
@@ -113,7 +123,7 @@ class MatchSpeedPlayer {
     return false;
   }
 
-  update(layout: LayoutInfo[]) {
+  updatePlayACards(layout: LayoutInfo[]) {
     for(const pac of this.player.playACards) {
       this.playACardCnt = Math.max(this.playACardCnt, pac.counter);
       //手札追加
@@ -136,6 +146,14 @@ class MatchSpeedPlayer {
       this.hand[pac.handIdx] = Card.empty;
     }
     this.player.clearPlayACard(); //やったら消す
+  }
+
+  updateBot(layout: LayoutInfo[], fDeltaTime: number) {
+  }
+
+  update(layout: LayoutInfo[], fDeltaTime: number) {
+    this.updateBot(layout, fDeltaTime);
+    this.updatePlayACards(layout);
   }
 
   //終わった?
@@ -161,12 +179,70 @@ class MatchSpeedPlayer {
   }
 }
 
+class MatchSpeedBotPlayer extends MatchSpeedPlayer {
+  private getHnadInterval() {
+    return 2; //2sec
+  }
+  private getDecInterval() {
+    return 1; //1sec
+  }
+  private updHnadTimer(fDeltaTime: number): boolean {
+    this.handTimer += fDeltaTime;
+    const interval = this.getHnadInterval();
+    const ret: boolean = (this.handTimer >= interval);
+    this.handTimer %= interval;
+    return ret;
+  }
+  private updDecTimer(fDeltaTime: number): boolean {
+    this.decTimer += fDeltaTime;
+    const interval = this.getDecInterval();
+    const ret: boolean = (this.decTimer >= interval);
+    this.decTimer %= interval;
+    return ret;
+  }
+  override updateBot(layout: LayoutInfo[], fDeltaTime: number) {
+    //出せたら出す
+    if (this.updHnadTimer(fDeltaTime)) {
+      do {
+        if (this.hand.length <= 0) break;
+        let h = this.handIndex++;
+        h %= this.hand.length;
+        this.handIndex %= this.hand.length;
+        for (let l = 0; l < layout.length; ++l) {
+          if (layout[l].canPlayACard(this.hand[h])) {
+            const pac = new PlayACard();
+            pac.handIdx = h;
+            pac.layoutIdx = l;
+            pac.counter = -1;
+            this.player.pushPlayACard(pac);
+            return; //やったら終わり
+          }
+        }
+      } while (false);
+    }
+    //dec to hand
+    if (this.updDecTimer(fDeltaTime)) {
+      if (this.canDecToHand() && !this.canPlayAnyHandCard(layout)) {
+        const pac = new PlayACard();
+        pac.setDecToHand();
+        this.player.pushPlayACard(pac);
+        return; //やったら終わり
+      }
+    }
+  }
+  private handTimer: number = 0;
+  private handIndex: number = 0;
+  private decTimer: number = 0;
+}
+
 export class MatchSpeed {
   constructor(uuid: string, p0: Player, p1: Player) {
     this.uuid = uuid;
-    this.players = [new MatchSpeedPlayer(p0), new MatchSpeedPlayer(p1)];
+    const msp0 = p0.isBot ? new MatchSpeedBotPlayer(p0) : new MatchSpeedPlayer(p0);
+    const msp1 = p1.isBot ? new MatchSpeedBotPlayer(p1) : new MatchSpeedPlayer(p1);
+    this.players = [msp0, msp1];
     this.initMatch();
-    console.log("create match["+uuid+"]:" + p0.strSocketID + " : " + p1.strSocketID);
+    console.log("create match["+uuid+"]:" + p0.strSocketID+"("+p0.nickName+")" + " : " + p1.strSocketID+"("+p1.nickName+")");
   }
   dest() {
     this.players.forEach(p => { p.dest(); });
@@ -246,11 +322,11 @@ export class MatchSpeed {
   }
 
   //playerの更新
-  updatePlayers() {
+  updatePlayers(fDeltaTime: number) {
     const plnum = this.players.length; //2
     const ofs = Rng.randiMax(plnum-1); //0,1,update順randomにするだけ
     for (let i = 0; i < plnum; ++i) {
-      this.players[(i+ofs)%plnum].update(this.layout);
+      this.players[(i+ofs)%plnum].update(this.layout, fDeltaTime);
     }
   }
 
@@ -324,7 +400,7 @@ export class MatchSpeed {
         break;
       case MatchState.Playing:
         this.matchTime += fDeltaTime; //match時間更新
-        this.updatePlayers();
+        this.updatePlayers(fDeltaTime);
         //勝ち判定
         this.resultState = this.checkFinished();
         if (this.resultState != ResultState.Invalid) {

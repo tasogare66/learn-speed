@@ -376,7 +376,7 @@ export class ClientMatchSpeed {
           dragc.playACardCnt = this.myPlayer.playACardCnt++; //cardに記録しておく
           const d = new PlayACard();
           d.layoutIdx = loc.index;
-          d.handIdx= dragc.index;
+          d.handIdx = dragc.index;
           d.counter = dragc.playACardCnt;
           ClientSocket.emitPlayACard(clientSocket(), d);
           break;
