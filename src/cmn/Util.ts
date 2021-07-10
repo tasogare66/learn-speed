@@ -6,6 +6,9 @@ export function assert(condition: any, msg?: string): asserts condition {
 }
 
 export class Util {
+  static clamp = (num: number, min: number, max: number) => {
+    return Math.min(Math.max(num, min), max);
+  }
   static deg2rad(deg: number): number {
     return deg * (Math.PI / 180.0);
   }

@@ -180,11 +180,20 @@ class MatchSpeedPlayer {
 }
 
 class MatchSpeedBotPlayer extends MatchSpeedPlayer {
+  constructor(player: Player, opponent: Player) {
+    super(player);
+    this.botLevel = Util.clamp(opponent.winNum, 0, MatchSpeedBotPlayer.botLevelMax);
+    player.nickName = "BOT"+(this.botLevel+1); //level入れる
+  }
+  static handInterval: number[] = [1.8, 1.6, 1.2, 0.9, 0.6];
+  static decInterval: number[] = [1, 0.9, 0.8, 0.7, 0.6];
   private getHnadInterval() {
-    return 2; //2sec
+    assert(this.botLevel<MatchSpeedBotPlayer.handInterval.length);
+    return MatchSpeedBotPlayer.handInterval[this.botLevel];
   }
   private getDecInterval() {
-    return 1; //1sec
+    assert(this.botLevel<MatchSpeedBotPlayer.decInterval.length);
+    return MatchSpeedBotPlayer.decInterval[this.botLevel];
   }
   private updHnadTimer(fDeltaTime: number): boolean {
     this.handTimer += fDeltaTime;
@@ -233,13 +242,15 @@ class MatchSpeedBotPlayer extends MatchSpeedPlayer {
   private handTimer: number = 0;
   private handIndex: number = 0;
   private decTimer: number = 0;
+  static readonly botLevelMax = 4; //0-4
+  private botLevel: number;
 }
 
 export class MatchSpeed {
   constructor(uuid: string, p0: Player, p1: Player) {
     this.uuid = uuid;
-    const msp0 = p0.isBot ? new MatchSpeedBotPlayer(p0) : new MatchSpeedPlayer(p0);
-    const msp1 = p1.isBot ? new MatchSpeedBotPlayer(p1) : new MatchSpeedPlayer(p1);
+    const msp0 = p0.isBot ? new MatchSpeedBotPlayer(p0,p1) : new MatchSpeedPlayer(p0);
+    const msp1 = p1.isBot ? new MatchSpeedBotPlayer(p1,p0) : new MatchSpeedPlayer(p1);
     this.players = [msp0, msp1];
     this.initMatch();
     console.log("create match["+uuid+"]:" + p0.strSocketID+"("+p0.nickName+")" + " : " + p1.strSocketID+"("+p1.nickName+")");
@@ -384,6 +395,25 @@ export class MatchSpeed {
     this.setMiscTime(GameSettings.FINISHD_WAIT_SEC);
     this.matchState = MatchState.Finished;
   }
+  private setResultToPlayers(resultState: ResultState) {
+    switch(resultState) {
+      case ResultState.P0Win:
+        this.players[0]!.player.winNum++;
+        this.players[1]!.player.loseNum++;
+        break;
+      case ResultState.P1Win:
+        this.players[0]!.player.loseNum++;
+        this.players[1]!.player.winNum++;
+        break;
+      case ResultState.Draw:
+        this.players[0]!.player.drawNum++;
+        this.players[1]!.player.drawNum++;
+        break;
+      default:
+        assert(0);
+        break;
+    }
+  }
   private upudateMatch(fDeltaTime: number) {
     switch (this.matchState) {
       case MatchState.StartWait:
@@ -404,6 +434,7 @@ export class MatchSpeed {
         //勝ち判定
         this.resultState = this.checkFinished();
         if (this.resultState != ResultState.Invalid) {
+          this.setResultToPlayers(this.resultState);
           this.setFinishState();
         } else if (!this.canPlayACardIgnoreJockerAnyPlayer()) {
           if (this.hasJockerInHandAnyPlayer()) {

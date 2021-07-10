@@ -13,6 +13,9 @@ export class Player {
   playACards: PlayACard[] = [];
   dragInfo: DragInfo | null = null;
   emoteType: EmoteType = EmoteType.Invalid;
+  winNum: number = 0;
+  loseNum: number = 0;
+  drawNum : number = 0;
 
   matchStart() {
     this.isDuringTheGame = true;
@@ -56,7 +59,7 @@ export class Player {
 
 export class BotPlayer extends Player {
   constructor() {
-    super('', "BOT1");
+    super('', '');
     this.isBot = true;
   }
 }
