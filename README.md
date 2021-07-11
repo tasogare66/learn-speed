@@ -5,6 +5,7 @@ Online speed (card game) with Node.js and Socket.IO sample.
 <img src="./captures/OnlineSpeedPlay.gif" alt="Online speed gameplay." width="428" height="480"></img>
 </p>
 <p align="center"><a href="https://youtu.be/wpY6ECbxOO4" target="_blank">MOVIE</a></p>
+<p align="center"><a href="https://tasogare66.blogspot.com/2021/07/online-speed-card-game-with-nodejs-and.html" target="_blank">BLOG</a></p>
 <p align="center"><a href="https://learn-speed.herokuapp.com/" target="_blank">PLAY</a></p>
 
 ## Running the sample
